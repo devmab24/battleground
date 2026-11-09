@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Battleground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Battleground</h1>
+    <p class="tagline">Type two fighters. Find out who wins.</p>
+  </header>
+
+  <main>
+    <!-- View 1: input form (only view visible on load) -->
+    <section id="view-form" class="view" aria-labelledby="form-title">
+      <h2 id="form-title" class="visually-hidden">Choose your fighters</h2>
+      <form id="fight-form" novalidate>
+        <div class="fighters">
+          <label class="field">
+            <span>Fighter A</span>
+            <input id="fighter-a" name="fighterA" type="text" maxlength="50" autocomplete="off" placeholder="e.g. 10 cows">
+          </label>
+          <span class="vs" aria-hidden="true">VS</span>
+          <label class="field">
+            <span>Fighter B</span>
+            <input id="fighter-b" name="fighterB" type="text" maxlength="50" autocomplete="off" placeholder="e.g. 10 lions">
+          </label>
+        </div>
+        <p id="form-message" class="form-message" role="alert"></p>
+        <button type="submit" class="btn btn-primary">Fight!</button>
+      </form>
+    </section>
+
+    <!-- View 2: loading -->
+    <section id="view-loading" class="view" hidden aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <p id="loading-text">Fighters entering the arena…</p>
+    </section>
+
+    <!-- View 3: result -->
+    <section id="view-result" class="view" hidden aria-labelledby="result-title">
+      <h2 id="result-title">Winner: <span id="winner-name"></span></h2>
+      <div class="cards">
+        <figure class="card" id="card-a">
+          <img id="image-a" alt="">
+          <figcaption id="label-a"></figcaption>
+        </figure>
+        <figure class="card" id="card-b">
+          <img id="image-b" alt="">
+          <figcaption id="label-b"></figcaption>
+        </figure>
+      </div>
+      <p id="reasoning" class="reasoning"></p>
+      <button type="button" class="btn" data-action="new-fight">New fight</button>
+    </section>
+
+    <!-- View 4: error -->
+    <section id="view-error" class="view" hidden role="alert">
+      <h2>Something went wrong</h2>
+      <p id="error-text">The fight couldn't be judged. Please try again.</p>
+      <button type="button" class="btn" data-action="new-fight">Try again</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
