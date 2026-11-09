@@ -2,6 +2,7 @@
   "name": "battleground",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Type two fighters, get an AI verdict on who'd win.",
   "scripts": {
     "dev": "node dev-server.js",
@@ -14,5 +15,11 @@
   },
   "allowScripts": {
     "esbuild@0.27.0": true
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
+    "@upstash/ratelimit": "^2.2.0",
+    "@upstash/redis": "^1.41.0",
+    "zod": "^4.6.7"
   }
 }

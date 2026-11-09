@@ -1,5 +1,5 @@
-// Stage 1: UI shell with fake data. No network calls yet.
-// Tip: add ?mock=error to the URL to see the error view.
+// Frontend: the verdict comes from /api/fight; images are placeholders for now.
+// Tip: add ?mock=error to the URL to see the error view without calling the API.
 
 const views = {
   form: document.getElementById("view-form"),
@@ -13,7 +13,7 @@ const inputA = document.getElementById("fighter-a");
 const inputB = document.getElementById("fighter-b");
 const formMessage = document.getElementById("form-message");
 
-const FAKE_DELAY_MS = 1500;
+const FIGHT_TIMEOUT_MS = 60_000;
 
 // Show exactly one view; hide all the others.
 function showView(name) {
@@ -47,26 +47,42 @@ function escapeXml(text) {
   return text.replace(/[<>&"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
-// Stand-in for the real /api/fight call (Stage 3).
-function fakeFight(fighterA, fighterB) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (new URLSearchParams(location.search).get("mock") === "error") {
-        reject(new Error("Mock error: the judge left the arena."));
-        return;
-      }
-      // Winner is identified by side ("a" or "b"), not by name,
-      // so identical fighters (e.g. "cow" vs "cow") still work.
-      const winnerSide = Math.random() < 0.5 ? "a" : "b";
-      const winner = winnerSide === "a" ? fighterA : fighterB;
-      resolve({
-        winnerSide,
-        reasoning: `${winner} wins this one. This is placeholder reasoning — the real verdict arrives in Stage 3.`,
-        imageA: placeholderImage(fighterA, "#3a6fd9"),
-        imageB: placeholderImage(fighterB, "#d93a3a"),
-      });
-    }, FAKE_DELAY_MS);
-  });
+// Calls /api/fight for the verdict. Images are still placeholders until
+// image generation is added. Throws an Error with a user-facing message.
+async function fight(fighterA, fighterB) {
+  if (new URLSearchParams(location.search).get("mock") === "error") {
+    throw new Error("Mock error: the judge left the arena.");
+  }
+
+  let response;
+  try {
+    response = await fetch("/api/fight", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fighterA, fighterB }),
+      signal: AbortSignal.timeout(FIGHT_TIMEOUT_MS),
+    });
+  } catch (err) {
+    throw new Error(
+      err.name === "TimeoutError"
+        ? "The judge took too long. Try again."
+        : "Couldn't reach the arena. Check your connection and try again."
+    );
+  }
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || "The fight couldn't be judged. Please try again.");
+  }
+
+  // Winner is identified by side ("A" or "B"), not by name,
+  // so identical fighters (e.g. "cow" vs "cow") still work.
+  return {
+    winnerSide: data.winner === "A" ? "a" : "b",
+    reasoning: data.reasoning,
+    imageA: placeholderImage(fighterA, "#3a6fd9"),
+    imageB: placeholderImage(fighterB, "#d93a3a"),
+  };
 }
 
 function renderResult(fighterA, fighterB, result) {
@@ -104,7 +120,7 @@ form.addEventListener("submit", async (event) => {
 
   showView("loading");
   try {
-    const result = await fakeFight(fighterA, fighterB);
+    const result = await fight(fighterA, fighterB);
     renderResult(fighterA, fighterB, result);
     showView("result");
   } catch (err) {
