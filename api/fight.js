@@ -3,7 +3,7 @@
 // Each image is { status: "ok" | "blocked" | "failed" | "skipped", src }.
 // Without ANTHROPIC_API_KEY it returns a mock verdict (mock: true) instead of calling Claude.
 // Without POLLINATIONS_API_KEY images come back "skipped" (placeholder art).
-import { sanitizeFighter } from "../lib/judge-prompt.mjs";
+import { MAX_FIGHTER_LENGTH, fighterLength, sanitizeFighter } from "../lib/judge-prompt.mjs";
 import { hasJudgeKey, isJudgeBusy, judgeFight, mockVerdict } from "../lib/judge.mjs";
 import { checkRateLimit } from "../lib/rate-limit.mjs";
 import { generateFighterImage } from "../lib/images.mjs";
@@ -26,13 +26,20 @@ export async function POST(request) {
   try {
     body = await request.json();
   } catch {
-    return json(400, { error: "bad_request", message: "Send JSON with fighterA and fighterB." });
+    return json(400, { error: "bad_request", message: "That challenge came in garbled! Send two fighter names and we'll ring the bell." });
   }
 
   const fighterA = sanitizeFighter(body?.fighterA);
   const fighterB = sanitizeFighter(body?.fighterB);
   if (!fighterA || !fighterB) {
-    return json(400, { error: "bad_request", message: "Enter two fighters." });
+    return json(400, { error: "bad_request", message: "The ring is empty! Name two fighters to start the brawl." });
+  }
+  // Too long is an error, not a silent cut: the player should see their name as typed.
+  if (fighterLength(body.fighterA) > MAX_FIGHTER_LENGTH || fighterLength(body.fighterB) > MAX_FIGHTER_LENGTH) {
+    return json(400, {
+      error: "name_too_long",
+      message: `That name won't fit on the scoreboard! Keep each fighter to ${MAX_FIGHTER_LENGTH} characters or fewer.`,
+    });
   }
 
   // Rate limit before any AI call. Only valid requests count.
@@ -41,13 +48,20 @@ export async function POST(request) {
     limit = await checkRateLimit(clientIp(request));
   } catch (err) {
     console.error("[fight] rate limiter unavailable:", err);
-    return json(503, { error: "unavailable", message: "The arena is closed for a moment. Try again soon." });
+    return json(503, {
+      error: "unavailable",
+      message: "The arena doors are jammed! Our crew is on it. Come back swinging in a minute.",
+    });
   }
   if (!limit.ok) {
     const s = limit.retryAfterSeconds;
     return json(
       429,
-      { error: "rate_limited", message: `Slow down! Try again in ${s} second${s === 1 ? "" : "s"}.`, retryAfter: s },
+      {
+        error: "rate_limited",
+        message: `Whoa there! The crowd needs a breather. Next bout starts in ${s} second${s === 1 ? "" : "s"}.`,
+        retryAfter: s,
+      },
       { "Retry-After": String(s) },
     );
   }
@@ -72,8 +86,8 @@ export async function POST(request) {
     return json(busy ? 503 : 502, {
       error: "verdict_failed",
       message: busy
-        ? "The judge is swamped right now. Try again in a moment."
-        : "The judge couldn't reach a verdict. Try again.",
+        ? "The judges are buried under a mountain of bouts! Catch your breath and try again in a moment."
+        : "The judges are scratching their heads and can't call this one. Ring the bell and try again!",
     });
   }
 }

@@ -23,15 +23,62 @@ function showView(name) {
   }
 }
 
-// Returns an error message, or "" if both inputs are valid.
-function validate(a, b) {
-  inputA.setAttribute("aria-invalid", String(!a));
-  inputB.setAttribute("aria-invalid", String(!b));
-  if (!a && !b) return "Enter two fighters.";
-  if (!a) return "Enter Fighter A.";
-  if (!b) return "Enter Fighter B.";
+// Same limit and counting as the server (lib/judge-prompt.mjs): whitespace
+// collapsed and trimmed, counted in characters, so an emoji counts as 1.
+const MAX_FIGHTER_LENGTH = 50;
+
+function nameLength(name) {
+  return [...name.replace(/\s+/g, " ").trim()].length;
+}
+
+// Returns the too-long message for the two names, or "" if both fit.
+function lengthMessage(a, b) {
+  const overA = nameLength(a) > MAX_FIGHTER_LENGTH;
+  const overB = nameLength(b) > MAX_FIGHTER_LENGTH;
+  if (overA && overB) {
+    return `Both names are too long for the scoreboard! Keep each fighter to ${MAX_FIGHTER_LENGTH} characters or fewer.`;
+  }
+  if (overA || overB) {
+    const [side, name] = overA ? ["A", a] : ["B", b];
+    return `Fighter ${side}'s name won't fit on the scoreboard! Trim it to ${MAX_FIGHTER_LENGTH} characters or fewer (it's at ${nameLength(name)}).`;
+  }
   return "";
 }
+
+// Returns an error message, or "" if both inputs are valid.
+function validate(a, b) {
+  const over = (name) => nameLength(name) > MAX_FIGHTER_LENGTH;
+  inputA.setAttribute("aria-invalid", String(!a || over(a)));
+  inputB.setAttribute("aria-invalid", String(!b || over(b)));
+  if (!a && !b) return "The ring is empty! Name two fighters to start the brawl.";
+  if (!a) return "Fighter A is a no-show! Give them a name.";
+  if (!b) return "Fighter B is a no-show! Give them a name.";
+  return lengthMessage(a, b);
+}
+
+// Live while typing: update the "n/50" counters and warn as soon as a name is
+// too long (the empty-name messages only show on submit).
+let showingLengthMessage = false;
+function onNameInput() {
+  for (const [input, counter] of [[inputA, "count-a"], [inputB, "count-b"]]) {
+    const n = nameLength(input.value);
+    const el = document.getElementById(counter);
+    el.textContent = `${n}/${MAX_FIGHTER_LENGTH}`;
+    el.classList.toggle("is-over", n > MAX_FIGHTER_LENGTH);
+    if (n > MAX_FIGHTER_LENGTH) input.setAttribute("aria-invalid", "true");
+    else if (input.getAttribute("aria-invalid") === "true" && input.value.trim()) input.setAttribute("aria-invalid", "false");
+  }
+  const message = lengthMessage(inputA.value, inputB.value);
+  if (message) {
+    formMessage.textContent = message;
+    showingLengthMessage = true;
+  } else if (showingLengthMessage) {
+    formMessage.textContent = "";
+    showingLengthMessage = false;
+  }
+}
+inputA.addEventListener("input", onNameInput);
+inputB.addEventListener("input", onNameInput);
 
 // Placeholder art: a coloured square with the fighter's first letter,
 // skipping a leading "a", "an" or "the" ("a ninja" shows N, not A).
@@ -63,7 +110,7 @@ class FightError extends Error {
 // Throws a FightError with a user-facing heading and message.
 async function fight(fighterA, fighterB) {
   if (new URLSearchParams(location.search).get("mock") === "error") {
-    throw new FightError("Something went wrong", "Mock error: the judge left the arena.");
+    throw new FightError("Test-mode mayhem!", "Mock error: the judge stormed out of the arena in a huff.");
   }
 
   let response;
@@ -76,21 +123,36 @@ async function fight(fighterA, fighterB) {
     });
   } catch (err) {
     throw err.name === "TimeoutError"
-      ? new FightError("Time's up", "The judge took too long. Try again.")
-      : new FightError("Can't reach the arena", "Couldn't reach the arena. Check your connection and try again.");
+      ? new FightError("Time's up!", "The judges deliberated so long the crowd went home. Step back in the ring and try again!")
+      : new FightError("The arena's gone dark!", "We can't reach the arena. Check your connection and come back swinging.");
   }
 
   const data = await response.json().catch(() => ({}));
   if (response.status === 429) {
-    throw new FightError("Too many fights", data.message || "Slow down! Try again in a minute.");
+    throw new FightError(
+      "Easy, champ!",
+      data.message || "Whoa there! The crowd needs a breather. Give it a minute before the next bout.",
+    );
+  }
+  if (response.status === 400) {
+    throw new FightError("Foul!", data.message || "The referee threw out that challenge. Check both names and try again.");
+  }
+  if (response.status === 503) {
+    throw new FightError(
+      "Hold your horses!",
+      data.message || "The arena is packed to bursting! Catch your breath and try again in a moment.",
+    );
   }
   if (!response.ok) {
-    throw new FightError("No verdict", data.message || "The fight couldn't be judged. Please try again.");
+    throw new FightError(
+      "No decision!",
+      data.message || "The fight fizzled out before anyone landed a punch. Ring the bell and try again!",
+    );
   }
   // A 200 without a real verdict (e.g. an HTML page from a proxy) must not
   // invent a winner.
   if ((data.winner !== "A" && data.winner !== "B") || typeof data.reasoning !== "string") {
-    throw new FightError("No verdict", "The fight couldn't be judged. Please try again.");
+    throw new FightError("No decision!", "The scorecards came back blank! Ring the bell and try again.");
   }
 
   // Winner is identified by side ("A" or "B"), not by name,
@@ -108,11 +170,56 @@ async function fight(fighterA, fighterB) {
   };
 }
 
+// Fun lines that rotate on the loading view while the fight is judged.
+// Functions get the two fighter names (set with textContent, so any name is safe).
+const LOADING_LINES = [
+  "Sharpening claws…",
+  "Consulting the ancient scrolls…",
+  "Polishing the championship belt…",
+  "Taping up the gloves…",
+  "Warming up the crowd…",
+  "Flexing dramatically for the cameras…",
+  "Checking the rulebook (there isn't one)…",
+  "Rolling for initiative…",
+  "Sweeping the arena floor…",
+  "Bribing the referee… just kidding…",
+  "Selling overpriced arena nachos…",
+  "Rehearsing victory poses…",
+  (a) => `${a} is cracking their knuckles…`,
+  (a, b) => `${b} is doing suspicious stretches…`,
+  (a, b) => `Sizing up ${a} vs ${b}…`,
+  (a, b) => `The crowd is chanting for ${Math.random() < 0.5 ? a : b}…`,
+];
+const LOADING_LINE_MS = 1800;
+const loadingText = document.getElementById("loading-text");
+let loadingTimer = null;
+
+// Starts cycling lines in a shuffled order, so none repeats until all have shown.
+function startLoadingLines(fighterA, fighterB) {
+  stopLoadingLines();
+  document.getElementById("loading-status").textContent =
+    `The fight is on: ${fighterA} versus ${fighterB}. Waiting for the judges.`;
+  let queue = [];
+  const next = () => {
+    if (!queue.length) queue = [...LOADING_LINES].sort(() => Math.random() - 0.5);
+    const line = queue.pop();
+    loadingText.textContent = typeof line === "function" ? line(fighterA, fighterB) : line;
+  };
+  next();
+  loadingTimer = setInterval(next, LOADING_LINE_MS);
+}
+
+function stopLoadingLines() {
+  clearInterval(loadingTimer);
+  loadingTimer = null;
+  document.getElementById("loading-status").textContent = "";
+}
+
 // Shown under the art when the real image couldn't be made.
 // "skipped" (no image key configured) shows no note.
 const IMAGE_NOTES = {
-  blocked: "Art blocked by the content filter.",
-  failed: "Art couldn't be generated.",
+  blocked: "The ring censors confiscated this portrait.",
+  failed: "Our arena artist fainted mid-sketch. No portrait this time.",
 };
 
 function renderResult(fighterA, fighterB, result) {
@@ -222,8 +329,8 @@ function storeDex(entries) {
     return "";
   } catch (err) {
     return err?.name === "QuotaExceededError"
-      ? "Your BattleDex is full. Delete some fighters to make room."
-      : "Couldn't save: this browser is blocking storage for this site.";
+      ? "The BattleDex is packed to the rafters! Retire a few fighters to make room."
+      : "This browser locked the BattleDex vault. Allow site storage to save fighters.";
   }
 }
 
@@ -277,7 +384,7 @@ async function saveFighter(side, button) {
   const original = document.getElementById(`image-${side}`).src;
   const note = document.querySelector(`[data-save-message='${side}']`);
   if (!isValidEntry({ label, image: original })) {
-    note.textContent = "This fighter can't be saved.";
+    note.textContent = "This fighter refuses to be filed away!";
     return;
   }
 
@@ -348,16 +455,21 @@ form.addEventListener("submit", async (event) => {
   }
 
   showView("loading");
+  startLoadingLines(fighterA, fighterB);
   try {
     const result = await fight(fighterA, fighterB);
+    stopLoadingLines();
     renderResult(fighterA, fighterB, result);
     showView("result");
   } catch (err) {
+    stopLoadingLines();
     // A non-FightError means a bug in this file; log it, still show something useful.
     if (!(err instanceof FightError)) console.error("[fight]", err);
-    document.getElementById("error-title").textContent = err.title || "Something went wrong";
+    document.getElementById("error-title").textContent = err.title || "Wardrobe malfunction!";
     document.getElementById("error-text").textContent =
-      err instanceof FightError ? err.message : "Something broke on this page. Please try again.";
+      err instanceof FightError
+        ? err.message
+        : "Something snapped backstage. Refresh the page and step back into the ring.";
     showView("error");
   }
 });

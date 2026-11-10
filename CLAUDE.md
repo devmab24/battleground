@@ -26,7 +26,7 @@ Battleground: type two fighters, get an AI verdict on who'd win plus art for eac
 - **`api/fight.js`** validates names, checks the rate limit, then calls the judge in `lib/judge.mjs` (Claude `claude-opus-5-5`, effort `low`, server-side refusal fallbacks, `client.beta.messages.parse` with a zod schema). It returns `{ winner: "A" | "B", reasoning }`. If `ANTHROPIC_API_KEY` is unset, it returns a deterministic mock verdict (`mock: true`) with no network call. Both fighter images are generated in parallel with the verdict (`lib/images.mjs`, Pollinations `gen.pollinations.ai/image/`, needs `POLLINATIONS_API_KEY`). Each comes back as `images.a`/`images.b` = `{ status: "ok"|"blocked"|"failed"|"skipped", src }`, and an image problem never fails the fight. Every image prompt is built by `buildImagePrompt()` in `lib/art-style.mjs`, which appends the shared art style template. Keep shared modules in `lib/`, because Vercel turns every file in `api/` into a public route. API keys must stay server-side.
 - **`lib/`** holds server-side ES modules (`.mjs`):
   - `judge.mjs`: `judgeFight()` (the Claude call), `mockVerdict()`, `JUDGE_MODEL`. Used by `api/fight.js` and `scripts/check-judge.mjs`.
-  - `judge-prompt.mjs`: the judge system prompt, `sanitizeFighter()` (trims, collapses whitespace, caps names at 50 chars, swaps `<`/`>` so a name can't break out of its tag), and `buildJudgeUserMessage()`, which wraps names in `<fighter_a>`/`<fighter_b>` tags.
+  - `judge-prompt.mjs`: the judge system prompt, `fighterLength()` (whitespace collapsed and trimmed, counted in code points so an emoji is 1), `sanitizeFighter()` (trims, collapses whitespace, caps names at 50 chars as a backstop, swaps `<`/`>` so a name can't break out of its tag), and `buildJudgeUserMessage()`, which wraps names in `<fighter_a>`/`<fighter_b>` tags.
   - `judge-test-cases.mjs`: adversarial and edge-case inputs with expected behavior (prompt injection, prompt leaking, identical fighters). Run them with `npm run check:judge` once a key exists.
 
 ### Rules across files
@@ -34,7 +34,7 @@ Battleground: type two fighters, get an AI verdict on who'd win plus art for eac
 - The winner is identified by **side** (`"A"`/`"B"`, or `winnerSide: "a"/"b"` in the frontend), never by name, because both fighters can have the same name ("cow" vs "cow").
 - No draws, ever. The judge must always pick one winner.
 - The verdict shape `{ winner, reasoning }` should be enforced by a structured-output schema (zod in the plan), not by JSON instructions in the prompt.
-- Fighter text is data, never instructions. Validate names (trimmed, 1–50 chars) on both the client and the server.
+- Fighter text is data, never instructions. Validate names (trimmed, 1–50 chars) on both the client and the server. Over 50 is an error with a message (page: live counter and warning; server: 400 `name_too_long`), never a silent cut. `public/script.js` and `lib/judge-prompt.mjs` count length the same way; keep them in step.
 - Every image prompt gets the shared 16-bit pixel-art style template (`lib/art-style.mjs`). Only group names (`isGroupFighter()`: "10 cows", "an army of ants", "Batman and Robin") get the "show the whole group" wording; everything else asks for exactly one character, or the image model draws crowds.
 - `api/art-style.js` is a dead, fully commented-out CommonJS copy of the template. Don't uncomment it: `module.exports` breaks in this ESM project.
 - Rate limit: 5 requests/min per IP, checked before any AI call.

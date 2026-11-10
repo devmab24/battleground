@@ -75,6 +75,25 @@ main {
   font-weight: 600;
 }
 
+.field-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.char-count {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.char-count.is-over {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .field input {
   font: inherit;
   font-weight: 400;
@@ -176,6 +195,11 @@ main {
   to {
     transform: rotate(360deg);
   }
+}
+
+.loading-text {
+  min-height: 1.5em; /* lines differ in length; keep the box from jumping */
+  font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {

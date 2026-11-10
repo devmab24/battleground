@@ -18,14 +18,22 @@
       <h2 id="form-title" class="visually-hidden">Choose your fighters</h2>
       <form id="fight-form" novalidate>
         <div class="fighters">
+          <!-- No maxlength: a long paste would be cut off silently. script.js
+               checks the 50-character limit and explains it instead. -->
           <label class="field">
-            <span>Fighter A</span>
-            <input id="fighter-a" name="fighterA" type="text" maxlength="50" autocomplete="off" placeholder="e.g. 10 cows">
+            <span class="field-head">
+              <span>Fighter A</span>
+              <span class="char-count" id="count-a" aria-hidden="true">0/50</span>
+            </span>
+            <input id="fighter-a" name="fighterA" type="text" autocomplete="off" placeholder="e.g. 10 cows">
           </label>
           <span class="vs" aria-hidden="true">VS</span>
           <label class="field">
-            <span>Fighter B</span>
-            <input id="fighter-b" name="fighterB" type="text" maxlength="50" autocomplete="off" placeholder="e.g. 10 lions">
+            <span class="field-head">
+              <span>Fighter B</span>
+              <span class="char-count" id="count-b" aria-hidden="true">0/50</span>
+            </span>
+            <input id="fighter-b" name="fighterB" type="text" autocomplete="off" placeholder="e.g. 10 lions">
           </label>
         </div>
         <p id="form-message" class="form-message" role="alert"></p>
@@ -37,9 +45,11 @@
     </section>
 
     <!-- View 2: loading -->
-    <section id="view-loading" class="view" hidden aria-live="polite">
+    <section id="view-loading" class="view" hidden>
       <div class="spinner" aria-hidden="true"></div>
-      <p id="loading-text">Fighters entering the arena…</p>
+      <!-- Rotating fun lines are visual only; screen readers get one announcement. -->
+      <p id="loading-text" class="loading-text" aria-hidden="true">Fighters entering the arena…</p>
+      <p id="loading-status" class="visually-hidden" role="status"></p>
     </section>
 
     <!-- View 3: result -->
@@ -70,8 +80,8 @@
 
     <!-- View 4: error -->
     <section id="view-error" class="view" hidden role="alert">
-      <h2 id="error-title">Something went wrong</h2>
-      <p id="error-text">The fight couldn't be judged. Please try again.</p>
+      <h2 id="error-title">No decision!</h2>
+      <p id="error-text">The fight fizzled out before anyone landed a punch. Ring the bell and try again!</p>
       <button type="button" class="btn" data-action="new-fight">Try again</button>
     </section>
 
