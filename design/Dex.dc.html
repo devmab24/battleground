@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Battleground — BattleDex</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&amp;family=Bungee&amp;family=Silkscreen:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#1C110B}
+a{color:#F2B233}a:hover{color:#FFD36E}
+.bg-zig{background-color:#1C110B;background-image:linear-gradient(135deg,#25170E 25%,transparent 25%),linear-gradient(225deg,#25170E 25%,transparent 25%),linear-gradient(315deg,#25170E 25%,transparent 25%),linear-gradient(45deg,#25170E 25%,transparent 25%);background-size:48px 48px;background-position:-24px 0,-24px 0,0 0,0 0}
+.kente{background-image:repeating-linear-gradient(0deg,transparent 0 5px,rgba(26,15,10,.38) 5px 8px),repeating-linear-gradient(90deg,#F2B233 0 34px,#1A0F0A 34px 40px,#1E8A4F 40px 64px,#1A0F0A 64px 70px,#D2552A 70px 94px,#1A0F0A 94px 100px,#F2B233 100px 112px,#1E8A4F 112px 118px)}
+.dots-gold{background-color:#F2B233;background-image:radial-gradient(circle,#D99A1E 3px,transparent 3.5px);background-size:18px 18px}
+.dots-indigo{background-color:#6F8BFF;background-image:radial-gradient(circle,#5873E0 3px,transparent 3.5px);background-size:18px 18px}
+.dots-laterite{background-color:#E8673A;background-image:radial-gradient(circle,#C9532A 3px,transparent 3.5px);background-size:18px 18px}
+.dots-green{background-color:#3FB070;background-image:radial-gradient(circle,#2E9159 3px,transparent 3.5px);background-size:18px 18px}
+.zig-edge{background-image:linear-gradient(135deg,#1A0F0A 25%,transparent 25%),linear-gradient(225deg,#1A0F0A 25%,transparent 25%);background-size:16px 16px;background-position:0 0;background-repeat:repeat-x}
+.title-arcade{color:#F2B233;-webkit-text-stroke:3px #1A0F0A;paint-order:stroke fill;text-shadow:4px 4px 0 #D2552A,8px 8px 0 #1A0F0A}
+.btn-press{transition:transform .08s ease,box-shadow .08s ease}
+.btn-press:hover{transform:translate(-2px,-2px);box-shadow:9px 9px 0 #1A0F0A !important}
+.btn-press:active{transform:translate(4px,4px);box-shadow:2px 2px 0 #1A0F0A !important}
+.plaque{transition:transform .12s ease,box-shadow .12s ease}
+.plaque:hover{transform:translate(-3px,-3px) rotate(-0.6deg);box-shadow:11px 11px 0 #1A0F0A !important}
+.pixel{image-rendering:pixelated;image-rendering:crisp-edges}
+.del:hover{background:#B0361A !important;color:#FFF6E2 !important}
+.del:hover svg path{stroke:#FFF6E2}
+</style>
+</helmet>
+<div class="bg-zig" style="min-height: 100vh; display: flex; flex-direction: column; font-family: Archivo, system-ui, sans-serif; color: #F3E3C3">
+
+  <header style="display: flex; flex-direction: column">
+    <div class="kente" style="height: 18px; border-bottom: 4px solid #1A0F0A"></div>
+    <div style="width: 100%; max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between">
+      <a href="Main.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 14px">
+        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="25" fill="#D2552A" stroke="#1A0F0A" stroke-width="4"></circle><circle cx="28" cy="28" r="16" fill="#F2B233" stroke="#1A0F0A" stroke-width="3"></circle><path d="M28 17 L37 28 L28 39 L19 28 Z" fill="#1A0F0A"></path><path d="M28 3 V10 M28 46 V53 M3 28 H10 M46 28 H53" stroke="#1A0F0A" stroke-width="4"></path></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px">
+          <span class="title-arcade" style="font-family: Bungee, sans-serif; font-size: 34px; line-height: 1">BATTLEGROUND</span>
+          <span style="font-family: Silkscreen, monospace; font-size: 13px; letter-spacing: 0.14em; color: #E8D6B0">ARENA OF THE ANCIENTS</span>
+        </span>
+      </a>
+      <a href="Main.dc.html" class="btn-press" style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; background: #F2B233; color: #1A0F0A; border: 4px solid #1A0F0A; box-shadow: 6px 6px 0 #1A0F0A; font-family: Bungee, sans-serif; font-size: 16px; text-decoration: none">NEW FIGHT</a>
+    </div>
+  </header>
+
+  <main style="flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 8px 24px 64px; display: flex; flex-direction: column; gap: 32px">
+
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <p style="margin: 0; font-family: Silkscreen, monospace; font-size: 15px; letter-spacing: 0.2em; color: #F2B233">◆ HALL OF CHAMPIONS ◆</p>
+        <h1 class="title-arcade" style="margin: 0; font-family: Bungee, sans-serif; font-size: clamp(44px, 6vw, 72px); line-height: 1; font-weight: 400">BATTLEDEX</h1>
+        <p style="margin: 0; font-size: 18px; color: #E8D6B0">{{countLine}}</p>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 14px">
+        <a href="Result.dc.html" class="btn-press" style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; background: #2B1A10; color: #F3E3C3; border: 4px solid #1A0F0A; box-shadow: 6px 6px 0 #1A0F0A; font-family: Archivo, sans-serif; font-weight: 800; font-size: 16px; text-decoration: none">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M11 3 L5 9 L11 15" fill="none" stroke="#F3E3C3" stroke-width="3"></path></svg>
+          Back to last fight
+        </a>
+        <sc-if value="{{hasEntries}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{clearAll}}" class="btn-press del" style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; background: #1A0F0A; color: #FF9B78; border: 4px solid #D2552A; box-shadow: 6px 6px 0 #1A0F0A; font-family: Archivo, sans-serif; font-weight: 800; font-size: 16px; cursor: pointer">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 4 H16 M6 4 V2 H12 V4 M4 4 L5 16 H13 L14 4" fill="none" stroke="#FF9B78" stroke-width="2.5"></path></svg>
+            Clear all
+          </button>
+        </sc-if>
+      </div>
+    </div>
+
+    <div class="zig-edge" aria-hidden="true" style="height: 8px; background-color: #F2B233; border-top: 4px solid #1A0F0A"></div>
+
+    <sc-if value="{{hasMessage}}" hint-placeholder-val="{{ false }}">
+      <p role="status" style="margin: 0; align-self: flex-start; padding: 10px 16px; background: #1A0F0A; border: 3px solid #F2B233; color: #F3E3C3; font-weight: 600; font-size: 16px">{{message}}</p>
+    </sc-if>
+
+    <sc-if value="{{hasEntries}}" hint-placeholder-val="{{ true }}">
+      <ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 32px 28px">
+        <sc-for list="{{entries}}" as="e" hint-placeholder-count="6">
+          <li class="plaque" style="display: flex; flex-direction: column; background: #1A0F0A; border: 4px solid #1A0F0A; box-shadow: 7px 7px 0 #1A0F0A">
+            <div class="{{e.bg}}" style="position: relative; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; border-bottom: 4px solid #1A0F0A; overflow: hidden">
+              <span style="position: absolute; top: 10px; left: 10px; padding: 3px 7px; background: #1A0F0A; color: #F2B233; font-family: Silkscreen, monospace; font-size: 13px">No. {{e.num}}</span>
+              <sc-if value="{{e.hasArt}}" hint-placeholder-val="{{ true }}">
+                <img class="pixel" src="{{e.img}}" alt="Art of {{e.name}}" loading="lazy" style="width: 82%; height: 82%; object-fit: contain">
+              </sc-if>
+              <sc-if value="{{e.noArt}}" hint-placeholder-val="{{ false }}">
+                <div role="img" aria-label="Placeholder art for {{e.name}}" style="width: 62%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; background: #1A0F0A; border: 5px solid #F3E3C3; box-shadow: 0 0 0 5px #1A0F0A; transform: rotate(45deg)">
+                  <span style="transform: rotate(-45deg); font-family: Bungee, sans-serif; font-size: 64px; line-height: 1; color: #F2B233">{{e.letter}}</span>
+                </div>
+              </sc-if>
+            </div>
+            <div style="padding: 12px 14px 14px; background: #F3E3C3; color: #1A0F0A; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: 1">
+              <p style="margin: 0; min-width: 0; font-family: Bungee, sans-serif; font-size: 18px; line-height: 1.15; overflow-wrap: anywhere">{{e.nameUpper}}</p>
+              <button type="button" onClick="{{e.remove}}" aria-label="Delete {{e.name}} from BattleDex" class="del" style="flex: 0 0 auto; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: #F3E3C3; color: #1A0F0A; border: 3px solid #1A0F0A; cursor: pointer">
+                <svg width="20" height="20" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 4 H16 M6 4 V2 H12 V4 M4 4 L5 16 H13 L14 4 M7.5 7 V13 M10.5 7 V13" fill="none" stroke="#1A0F0A" stroke-width="2"></path></svg>
+              </button>
+            </div>
+          </li>
+        </sc-for>
+      </ul>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="align-self: center; max-width: 560px; display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 40px 32px; text-align: center; background: #2B1A10; border: 5px solid #1A0F0A; box-shadow: 10px 10px 0 #1A0F0A">
+        <svg width="150" height="120" viewBox="0 0 150 120" aria-hidden="true">
+          <rect x="35" y="86" width="80" height="16" fill="#5A3218" stroke="#1A0F0A" stroke-width="4"></rect>
+          <rect x="22" y="100" width="106" height="16" fill="#7A4A22" stroke="#1A0F0A" stroke-width="4"></rect>
+          <path d="M75 10 L95 42 L75 74 L55 42 Z" fill="none" stroke="#F2B233" stroke-width="4" stroke-dasharray="8 6"></path>
+        </svg>
+        <h2 style="margin: 0; font-family: Bungee, sans-serif; font-size: 28px; font-weight: 400; color: #F3E3C3">THE HALL IS EMPTY</h2>
+        <p style="margin: 0; font-size: 17px; line-height: 1.5; color: #E8D6B0">No fighters saved yet. Win or lose, save a fighter from any fight result and they will stand here forever.</p>
+        <a href="Main.dc.html" class="btn-press" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; background: #F2B233; color: #1A0F0A; border: 4px solid #1A0F0A; box-shadow: 6px 6px 0 #1A0F0A; font-family: Bungee, sans-serif; font-size: 20px; text-decoration: none">START A FIGHT</a>
+      </div>
+    </sc-if>
+  </main>
+
+  <div class="kente" style="height: 18px; border-top: 4px solid #1A0F0A"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1180}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      message: '',
+      list: [
+        { name: 'Lion', img: '/_blob/3d6115fe9a502003c6227b70ab8921f7', bg: 'dots-gold' },
+        { name: 'Honey badger', img: '/_blob/e2b6b451a3385b42d35262b703003be0', bg: 'dots-indigo' },
+        { name: 'Elephant', img: '/_blob/504dfc5710e57b34c815d34125f4138a', bg: 'dots-laterite' },
+        { name: 'Crocodile', img: '/_blob/cf2681097c454dd3b0d8c079d55f36a2', bg: 'dots-gold' },
+        { name: 'Anansi the spider', img: '', bg: 'dots-green' },
+        { name: 'Grandma with a slipper', img: '', bg: 'dots-laterite' }
+      ]
+    };
+  }
+  renderVals() {
+    const list = this.state.list;
+    const n = list.length;
+    const entries = list.map((e, i) => {
+      const bare = e.name.replace(/^(a|an|the)\s+/i, '') || e.name;
+      return {
+        name: e.name,
+        nameUpper: e.name.toUpperCase(),
+        img: e.img,
+        bg: e.bg,
+        hasArt: !!e.img,
+        noArt: !e.img,
+        letter: [...bare][0].toUpperCase(),
+        num: String(i + 1).padStart(3, '0'),
+        remove: () => this.setState({ list: list.filter((_, j) => j !== i), message: 'Deleted ' + e.name + '.' })
+      };
+    });
+    return {
+      entries,
+      hasEntries: n > 0,
+      isEmpty: n === 0,
+      countLine: n === 1 ? '1 fighter saved in this browser' : n + ' fighters saved in this browser',
+      hasMessage: !!this.state.message,
+      message: this.state.message,
+      clearAll: () => this.setState({ list: [], message: 'BattleDex cleared.' })
+    };
+  }
+}
+</script>
+</body>
+</html>

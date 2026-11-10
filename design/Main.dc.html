@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Battleground — Choose your fighters</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&amp;family=Bungee&amp;family=Silkscreen:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#1C110B}
+a{color:#F2B233}a:hover{color:#FFD36E}
+.bg-zig{background-color:#1C110B;background-image:linear-gradient(135deg,#25170E 25%,transparent 25%),linear-gradient(225deg,#25170E 25%,transparent 25%),linear-gradient(315deg,#25170E 25%,transparent 25%),linear-gradient(45deg,#25170E 25%,transparent 25%);background-size:48px 48px;background-position:-24px 0,-24px 0,0 0,0 0}
+.kente{background-image:repeating-linear-gradient(0deg,transparent 0 5px,rgba(26,15,10,.38) 5px 8px),repeating-linear-gradient(90deg,#F2B233 0 34px,#1A0F0A 34px 40px,#1E8A4F 40px 64px,#1A0F0A 64px 70px,#D2552A 70px 94px,#1A0F0A 94px 100px,#F2B233 100px 112px,#1E8A4F 112px 118px)}
+.dots{background-image:radial-gradient(circle,#1A0F0A 3px,transparent 3.5px);background-size:18px 18px;background-position:center}
+.title-arcade{color:#F2B233;-webkit-text-stroke:3px #1A0F0A;paint-order:stroke fill;text-shadow:4px 4px 0 #D2552A,8px 8px 0 #1A0F0A}
+.title-bone{color:#F3E3C3;-webkit-text-stroke:3px #1A0F0A;paint-order:stroke fill;text-shadow:5px 5px 0 #1A0F0A}
+.btn-press{transition:transform .08s ease,box-shadow .08s ease}
+.btn-press:hover{transform:translate(-2px,-2px);box-shadow:9px 9px 0 #1A0F0A !important}
+.btn-press:active{transform:translate(4px,4px);box-shadow:2px 2px 0 #1A0F0A !important}
+.fighter-input:focus{outline:4px solid #F2B233;outline-offset:3px}
+.fighter-input::placeholder{color:#8C7A63}
+.vs-rays{background:repeating-conic-gradient(#F2B233 0 10deg,#D2552A 10deg 20deg);animation:spin 18s linear infinite}
+.fight-pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
+@media (prefers-reduced-motion:reduce){.vs-rays,.fight-pulse{animation:none}}
+</style>
+</helmet>
+<div class="bg-zig" style="min-height: 100vh; display: flex; flex-direction: column; font-family: Archivo, system-ui, sans-serif; color: #F3E3C3">
+
+  <header style="display: flex; flex-direction: column">
+    <div class="kente" style="height: 18px; border-bottom: 4px solid #1A0F0A"></div>
+    <div style="width: 100%; max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between">
+      <a href="Main.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 14px">
+        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="25" fill="#D2552A" stroke="#1A0F0A" stroke-width="4"></circle><circle cx="28" cy="28" r="16" fill="#F2B233" stroke="#1A0F0A" stroke-width="3"></circle><path d="M28 17 L37 28 L28 39 L19 28 Z" fill="#1A0F0A"></path><path d="M28 3 V10 M28 46 V53 M3 28 H10 M46 28 H53" stroke="#1A0F0A" stroke-width="4"></path></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px">
+          <span class="title-arcade" style="font-family: Bungee, sans-serif; font-size: 34px; line-height: 1">BATTLEGROUND</span>
+          <span style="font-family: Silkscreen, monospace; font-size: 13px; letter-spacing: 0.14em; color: #E8D6B0">ARENA OF THE ANCIENTS</span>
+        </span>
+      </a>
+      <a href="Dex.dc.html" class="btn-press" style="display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 18px; background: #F3E3C3; color: #1A0F0A; border: 4px solid #1A0F0A; box-shadow: 6px 6px 0 #1A0F0A; font-family: Bungee, sans-serif; font-size: 16px; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="2" y="3" width="18" height="16" fill="none" stroke="#1A0F0A" stroke-width="3"></rect><path d="M2 9 H20 M8 9 V19" stroke="#1A0F0A" stroke-width="3"></path></svg>
+        BattleDex
+        <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 6px; box-sizing: border-box; background: #1A0F0A; color: #F2B233; font-family: Silkscreen, monospace; font-size: 14px">6</span>
+      </a>
+    </div>
+  </header>
+
+  <main style="flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; box-sizing: border-box; padding: 16px 24px 64px; display: flex; flex-direction: column; align-items: center; gap: 36px">
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+      <p style="margin: 0; font-family: Silkscreen, monospace; font-size: 15px; letter-spacing: 0.2em; color: #F2B233">◆ ENTER THE ARENA ◆</p>
+      <h1 class="title-bone" style="margin: 0; font-family: Bungee, sans-serif; font-size: clamp(38px, 6vw, 68px); line-height: 1.02; font-weight: 400">WHO WALKS OUT<br>OF THE ARENA?</h1>
+      <p style="margin: 0; max-width: 560px; font-size: 18px; line-height: 1.5; color: #E8D6B0">Name two fighters. The griot weighs them, tells the tale, and paints both warriors for the ages.</p>
+    </div>
+
+    <form style="width: 100%; box-sizing: border-box; background: #2B1A10; border: 5px solid #1A0F0A; box-shadow: 12px 12px 0 #1A0F0A; display: flex; flex-direction: column">
+      <div class="kente" style="height: 14px; border-bottom: 4px solid #1A0F0A"></div>
+      <div style="padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 28px">
+
+        <div style="width: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 24px">
+
+          <label style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; border: 4px solid #1A0F0A; box-shadow: 6px 6px 0 #1A0F0A; background: #F3E3C3">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: #6F8BFF; border-bottom: 4px solid #1A0F0A; color: #1A0F0A">
+              <span style="font-family: Bungee, sans-serif; font-size: 20px">FIGHTER A</span>
+              <span style="font-family: Silkscreen, monospace; font-size: 13px; letter-spacing: 0.1em">WEST GATE</span>
+            </span>
+            <span style="padding: 18px 16px 14px; display: flex; flex-direction: column; gap: 10px">
+              <input class="fighter-input" type="text" autocomplete="off" placeholder="e.g. 10 cows" value="{{a}}" onChange="{{onA}}" style="width: 100%; box-sizing: border-box; height: 64px; padding: 0 16px; border: 4px solid {{borderA}}; background: #FFF6E2; color: #1A0F0A; font-family: Bungee, sans-serif; font-size: 24px; box-shadow: inset 4px 4px 0 rgba(26,15,10,0.12)">
+              <span style="display: flex; justify-content: space-between; align-items: center; font-family: Silkscreen, monospace; font-size: 14px; color: #5A4632">
+                <span>NAME YOUR WARRIOR</span>
+                <span style="color: {{countColorA}}; font-weight: 700">{{countA}}</span>
+              </span>
+            </span>
+          </label>
+
+          <div aria-hidden="true" style="flex: 0 0 auto; position: relative; width: 132px; height: 132px; display: flex; align-items: center; justify-content: center">
+            <div class="vs-rays" style="position: absolute; inset: 0; border-radius: 50%; border: 4px solid #1A0F0A"></div>
+            <div style="position: relative; width: 92px; height: 92px; border-radius: 50%; background: #1A0F0A; border: 5px solid #F3E3C3; box-shadow: 0 0 0 4px #1A0F0A; display: flex; align-items: center; justify-content: center">
+              <span class="title-arcade" style="font-family: Bungee, sans-serif; font-size: 38px; line-height: 1; text-shadow: 3px 3px 0 #D2552A">VS</span>
+            </div>
+          </div>
+
+          <label style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; border: 4px solid #1A0F0A; box-shadow: 6px 6px 0 #1A0F0A; background: #F3E3C3">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: #E8673A; border-bottom: 4px solid #1A0F0A; color: #1A0F0A">
+              <span style="font-family: Bungee, sans-serif; font-size: 20px">FIGHTER B</span>
+              <span style="font-family: Silkscreen, monospace; font-size: 13px; letter-spacing: 0.1em">EAST GATE</span>
+            </span>
+            <span style="padding: 18px 16px 14px; display: flex; flex-direction: column; gap: 10px">
+              <input class="fighter-input" type="text" autocomplete="off" placeholder="e.g. 10 lions" value="{{b}}" onChange="{{onB}}" style="width: 100%; box-sizing: border-box; height: 64px; padding: 0 16px; border: 4px solid {{borderB}}; background: #FFF6E2; color: #1A0F0A; font-family: Bungee, sans-serif; font-size: 24px; box-shadow: inset 4px 4px 0 rgba(26,15,10,0.12)">
+              <span style="display: flex; justify-content: space-between; align-items: center; font-family: Silkscreen, monospace; font-size: 14px; color: #5A4632">
+                <span>NAME YOUR WARRIOR</span>
+                <span style="color: {{countColorB}}; font-weight: 700">{{countB}}</span>
+              </span>
+            </span>
+          </label>
+        </div>
+
+        <sc-if value="{{hasMessage}}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin: 0; display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #1A0F0A; border: 3px solid #E8673A; color: #FFB394; font-weight: 600; font-size: 16px">
+            <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 L19 18 H1 Z" fill="none" stroke="#FFB394" stroke-width="2.5"></path><path d="M10 8 V12 M10 14.5 V15.5" stroke="#FFB394" stroke-width="2.5"></path></svg>
+            {{message}}
+          </p>
+        </sc-if>
+
+        <sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
+          <a href="Loading.dc.html" class="btn-press fight-pulse" style="display: inline-flex; align-items: center; gap: 18px; padding: 18px 56px; background: #F2B233; color: #1A0F0A; border: 5px solid #1A0F0A; box-shadow: 8px 8px 0 #1A0F0A; font-family: Bungee, sans-serif; font-size: 40px; line-height: 1; text-decoration: none">
+            <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 30 L26 8 M22 4 L30 12 M8 22 L12 26" stroke="#1A0F0A" stroke-width="4" stroke-linecap="square"></path></svg>
+            FIGHT!
+            <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="M30 30 L8 8 M12 4 L4 12 M26 22 L22 26" stroke="#1A0F0A" stroke-width="4" stroke-linecap="square"></path></svg>
+          </a>
+        </sc-if>
+        <sc-if value="{{notReady}}" hint-placeholder-val="{{ false }}">
+          <button type="button" disabled style="display: inline-flex; align-items: center; gap: 18px; padding: 18px 56px; background: #4A3726; color: #A8977E; border: 5px solid #1A0F0A; box-shadow: 8px 8px 0 #1A0F0A; font-family: Bungee, sans-serif; font-size: 40px; line-height: 1; cursor: not-allowed">FIGHT!</button>
+        </sc-if>
+
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px">
+          <span style="font-family: Silkscreen, monospace; font-size: 14px; letter-spacing: 0.08em; color: #E8D6B0">NEED A MATCHUP?</span>
+          <sc-for list="{{chips}}" as="chip" hint-placeholder-count="3">
+            <button type="button" onClick="{{chip.pick}}" class="btn-press" style="min-height: 44px; padding: 0 14px; background: #1A0F0A; color: #F3E3C3; border: 3px solid #F2B233; box-shadow: 4px 4px 0 #000; font-family: Archivo, sans-serif; font-weight: 600; font-size: 15px; cursor: pointer">{{chip.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+    </form>
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 28px; font-family: Silkscreen, monospace; font-size: 14px; color: #CDB894; letter-spacing: 0.06em">
+      <span>◆ NO DRAWS. EVER.</span>
+      <span>◆ 5 FIGHTS A MINUTE</span>
+      <span>◆ SAVE CHAMPIONS TO YOUR BATTLEDEX</span>
+    </div>
+  </main>
+
+  <div class="kente" style="height: 18px; border-top: 4px solid #1A0F0A"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { a: 'Honey badger', b: 'Lion' };
+  }
+  len(s) { return [...String(s || '').trim().replace(/\s+/g, ' ')].length; }
+  renderVals() {
+    const la = this.len(this.state.a);
+    const lb = this.len(this.state.b);
+    const overA = la > 50, overB = lb > 50;
+    let message = '';
+    if (overA || overB) {
+      const extra = Math.max(la - 50, lb - 50);
+      message = (overA && overB ? 'Both names' : overA ? 'Fighter A' : 'Fighter B') + ' can be at most 50 characters. Trim ' + extra + ' to enter the arena.';
+    }
+    const ready = la > 0 && lb > 0 && !overA && !overB;
+    const set = (a, b) => () => this.setState({ a, b });
+    return {
+      a: this.state.a,
+      b: this.state.b,
+      onA: (e) => this.setState({ a: e.target.value }),
+      onB: (e) => this.setState({ b: e.target.value }),
+      countA: la + '/50',
+      countB: lb + '/50',
+      countColorA: overA ? '#B0361A' : '#5A4632',
+      countColorB: overB ? '#B0361A' : '#5A4632',
+      borderA: overA ? '#D2552A' : '#1A0F0A',
+      borderB: overB ? '#D2552A' : '#1A0F0A',
+      hasMessage: !!message,
+      message,
+      ready,
+      notReady: !ready,
+      chips: [
+        { label: '10 cows vs 10 lions', pick: set('10 cows', '10 lions') },
+        { label: 'Elephant vs Crocodile', pick: set('Elephant', 'Crocodile') },
+        { label: 'An army of ants vs a bear', pick: set('An army of ants', 'A bear') }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
