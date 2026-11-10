@@ -223,28 +223,12 @@ main {
   box-shadow: 4px 4px 0 var(--ink);
 }
 
-/* Clear all: terracotta outline on dark. */
-.btn-danger {
-  background: var(--ink);
-  color: var(--fighter-b);
-  border-color: var(--terracotta);
-}
-
-/* The "BattleDex (N)" button under the form. */
-.btn-link {
-  background: var(--bone);
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 16px;
   margin-top: 24px;
-}
-
-.view-links {
-  margin: 24px 0 0;
 }
 
 .visually-hidden {
@@ -609,10 +593,6 @@ body[data-view="loading"] .site-header::before {
   animation: pulse 1.6s ease-in-out infinite;
 }
 
-.btn-fight[aria-disabled="true"] {
-  box-shadow: 8px 8px 0 var(--ink);
-}
-
 .btn-fight[aria-disabled="true"] .sword path {
   stroke: #A8977E;
 }
@@ -678,11 +658,6 @@ body[data-view="loading"] .site-header::before {
 
 .arena-rules li::before {
   content: "◆ ";
-}
-
-/* The header has the BattleDex button now, so the form doesn't repeat it. */
-#view-form .view-links {
-  display: none;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1337,11 +1312,6 @@ body[data-view="loading"] .site-header::before {
   gap: 14px;
 }
 
-/* The header has New fight on this view; the empty state has Start a fight. */
-#view-dex .actions [data-action="new-fight"] {
-  display: none;
-}
-
 #view-dex .actions .btn {
   gap: 8px;
   font-family: var(--font-body);
@@ -1361,6 +1331,7 @@ body[data-view="loading"] .site-header::before {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M11 3 L5 9 L11 15' fill='none' stroke='%23F3E3C3' stroke-width='3'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
+/* Clear all: terracotta outline on dark. */
 #btn-clear-dex {
   background: var(--ink);
   color: #FF9B78;
