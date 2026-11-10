@@ -143,20 +143,54 @@ function renderResult(fighterA, fighterB, result) {
   }
   for (const note of document.querySelectorAll("[data-save-message]")) note.textContent = "";
   hasLastFight = true;
+  fightCount++;
 }
 
 // ---------------------------------------------------------------------------
 // BattleDex: saved fighters, kept in localStorage as an array of
-// { label, image } (no fight, winner or reasoning data). `image` is a data URI.
-// Stage 5 will compress images before saving; until then a real image is
-// ~100-150 KB, so roughly 30-40 fit in the browser's ~5 MB quota.
+// { label, image } (no fight, winner or reasoning data). `image` is a data URI,
+// shrunk by compressImage() before saving so many fighters fit in the
+// browser's ~5 MB localStorage quota.
 // ---------------------------------------------------------------------------
+
+// Saved art is shown at most ~200px wide in the BattleDex grid, so 256px
+// keeps it sharp on high-DPI screens.
+const SAVE_IMAGE_SIZE = 256;
+const SAVE_IMAGE_QUALITY = 0.8;
+
+// Draws the image onto an off-screen canvas at SAVE_IMAGE_SIZE and re-exports
+// it as WebP (JPEG where the browser can't make WebP). Returns the smaller of
+// the result and the original, so tiny placeholder SVGs are kept as they are.
+// Falls back to the original if anything goes wrong.
+async function compressImage(src) {
+  try {
+    const img = new Image();
+    img.src = src;
+    await img.decode();
+
+    const scale = Math.min(1, SAVE_IMAGE_SIZE / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    // toDataURL quietly returns PNG for formats it can't encode, so check.
+    let out = canvas.toDataURL("image/webp", SAVE_IMAGE_QUALITY);
+    if (!out.startsWith("data:image/webp")) out = canvas.toDataURL("image/jpeg", SAVE_IMAGE_QUALITY);
+    return out.length < src.length ? out : src;
+  } catch {
+    return src;
+  }
+}
 
 const DEX_KEY = "battleground.battledex";
 const dexGrid = document.getElementById("dex-grid");
 const dexMessage = document.getElementById("dex-message");
 const clearButton = document.getElementById("btn-clear-dex");
 let hasLastFight = false;
+let fightCount = 0; // goes up with every rendered fight
 let clearArmedTimer = null;
 
 // Only data-URI images are kept: that's all this app ever saves, and it stops
@@ -238,27 +272,36 @@ function openDex() {
   showView("dex");
 }
 
-function saveFighter(side, button) {
+async function saveFighter(side, button) {
   const label = document.getElementById(`label-${side}`).textContent;
-  const image = document.getElementById(`image-${side}`).src;
+  const original = document.getElementById(`image-${side}`).src;
   const note = document.querySelector(`[data-save-message='${side}']`);
-  const entry = { label, image };
-  if (!isValidEntry(entry)) {
+  if (!isValidEntry({ label, image: original })) {
     note.textContent = "This fighter can't be saved.";
     return;
   }
 
+  // Compressing takes a moment; block double clicks and remember which fight
+  // this was, in case a new fight starts before it finishes.
+  const fight = fightCount;
+  button.disabled = true;
+  button.textContent = "Saving…";
+  const image = await compressImage(original);
+
   const entries = loadDex();
-  entries.push(entry);
+  entries.push({ label, image });
   const problem = storeDex(entries);
+  updateDexCount(problem ? entries.length - 1 : entries.length);
+  if (fight !== fightCount) return; // the buttons now belong to a newer fight
+
   if (problem) {
+    button.disabled = false;
+    button.textContent = "Save to BattleDex";
     note.textContent = problem;
     return;
   }
-  button.disabled = true;
   button.textContent = "Saved ✓";
   note.textContent = "";
-  updateDexCount(entries.length);
 }
 
 function deleteFighter(index) {

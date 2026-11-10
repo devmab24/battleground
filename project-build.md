@@ -136,11 +136,19 @@
 
 **Goal:** stay under `localStorage` quota (per brief §5).
 
-- [ ] Before saving a fighter to BattleDex, draw its image to an off-screen `<canvas>`, resize down, re-export as JPEG/WebP at reduced quality
-- [ ] Save the compressed data URI, not the original
-- [ ] Test with several saved fighters that quota isn't hit quickly
+- [x] Before saving a fighter to BattleDex, draw its image to an off-screen `<canvas>`, resize down, re-export as JPEG/WebP at reduced quality
+- [x] Save the compressed data URI, not the original
+- [x] Test with several saved fighters that quota isn't hit quickly
 
 **Done when:** ~10+ saved fighters don't blow `localStorage` quota.
+
+### Stage 5 status notes (2026-11-10)
+
+**Built** in `public/script.js` (`compressImage()`, `saveFighter()` is now async). Before saving, the fighter's art is drawn onto an off-screen canvas at 256 px (the BattleDex shows it at ~140–200 px, so it stays sharp on high-DPI screens) and re-exported as WebP at quality 0.8, or JPEG 0.8 where the browser can't encode WebP. Whichever is smaller, the result or the original, is stored, so the tiny placeholder SVGs stay as they are. If compression fails for any reason, the original is saved. The Save button shows "Saving…" (disabled) while it works, and a save that finishes after a new fight has started doesn't touch the new fight's buttons.
+
+**Tested in Chrome (2026-11-10, `npm run dev`):** one real fight (2 Pollinations images, JPEG, 46 KB and 49 KB), then 12 fighters saved through the page's Save buttons: each stored as WebP at **~5 KB (about 9× smaller)**, **12 fighters = 61 KB total**, so ~1,000 fit in a 5 MB quota (was ~70 uncompressed). **Done-when passed.** The compressed art still looks clean at card size. After a page reload all 12 load at 256 px. Placeholder art stays SVG (0.5 KB). With WebP export disabled, a 142 KB source was stored as a 6.9 KB JPEG. Broken image data saves the original without crashing. No console errors.
+
+**Known limit:** fighters saved before Stage 5 keep their full-size images; they're not re-compressed.
 
 ---
 
