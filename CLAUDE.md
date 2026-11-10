@@ -11,8 +11,8 @@ Battleground: type two fighters, get an AI verdict on who'd win plus art for eac
 
 ## Commands
 
-- `npm run dev`: local server (`dev-server.js`) at http://localhost:3000 (`PORT` env var overrides it). It serves `public/`, runs `api/*.js` handlers the way Vercel does (Web `Request` in, `Response` out, one named export per HTTP method), and loads `.env`. It re-imports nothing on change, so restart it after editing `api/` or `lib/`.
-- `npm run dev:vercel`: `vercel dev`, the real Vercel runtime.
+- `npm run dev:local`: local server (`dev-server.js`) at http://localhost:3000 (`PORT` env var overrides it). It serves `public/`, runs `api/*.js` handlers the way Vercel does (Web `Request` in, `Response` out, one named export per HTTP method), and loads `.env`. It re-imports nothing on change, so restart it after editing `api/` or `lib/`.
+- `npm run dev:vercel`: `vercel dev`, the real Vercel runtime. Don't add a script named `dev`: `vercel dev` runs a `dev` script in place of its own runtime if one exists, so it would serve `dev-server.js` instead.
 - The project is ESM (`"type": "module"`).
 - `npm run check:judge`: runs the Stage 2 judge test cases against the real Claude API (8 paid calls). Needs `ANTHROPIC_API_KEY`; without it, it exits before calling anything.
 - `.env.example` lists every variable; copy it to `.env`. All keys are optional.

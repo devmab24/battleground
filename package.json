@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Type two fighters, get an AI verdict on who'd win.",
   "scripts": {
-    "dev": "node dev-server.js",
+    "dev:local": "node dev-server.js",
     "dev:vercel": "vercel dev",
     "build": "echo \"Static site: no build step\"",
     "check:judge": "node scripts/check-judge.mjs",

@@ -90,7 +90,7 @@
 1. Get a key at https://platform.claude.com/settings/keys and add credit.
 2. Put it in `.env` as `ANTHROPIC_API_KEY=sk-ant-...` (see `.env.example`). No code changes needed.
 3. Run `npm run check:judge`. Expect 8 verdicts, all "auto-checks passed"; read each reasoning against its "Expect" line (no poem, no code, no leaked prompt, cow A vs cow B told apart). Then tick Stage 2's boxes.
-4. Restart `npm run dev` and play a fight: the response should no longer have `"mock": true`.
+4. Restart `npm run dev:local` (or `npm run dev:vercel`) and play a fight: the response should no longer have `"mock": true`.
 5. For the live site, add the same key in Vercel → Project → Settings → Environment Variables, then redeploy.
 
 **Cost:** Opus 5.5 is $4 / $20 per million input / output tokens. Each fight sends ~1K tokens and gets a short answer at `effort: "low"`, so roughly a cent or two per fight (an estimate; check `usage` on the first real calls). The 5 fights/min/IP limit caps abuse per visitor, not in total, so set a monthly spend limit in the Claude Console before going live. A cheaper model (e.g. Claude Haiku 5.5 at $0.10 / $0.50) is a one-line change of `JUDGE_MODEL` in `lib/judge.mjs`, but Haiku has no server-side refusal fallback, so drop the `betas`/`fallbacks` lines with it, and re-run `npm run check:judge` to confirm quality holds.
