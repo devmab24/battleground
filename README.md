@@ -1,5 +1,7 @@
 # Battleground
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Type two fighters, get a verdict on who'd win, plus 16-bit pixel art of each. Save your favourite fighters to the BattleDex.
 
 A hobby project with a **$0 budget**: vanilla HTML/CSS/JS on the front end, Vercel serverless functions on the back end, free tiers or mock modes for everything else.
@@ -118,3 +120,7 @@ Built in stages from [`project-build.md`](project-build.md), each on its own bra
 - **Upstash:** a few Redis commands per fight; well within the free plan for a hobby site (check current limits).
 - **Anthropic:** paid. Not used until a key is added.
 - **Fonts:** Google Fonts (Bungee, Silkscreen, Archivo), free.
+
+## License
+
+[MIT](LICENSE) © 2026 Muhammad Bello Ayuba. You're free to use, copy, modify and share this project, as long as the copyright notice and license text are kept. It comes with no warranty.
