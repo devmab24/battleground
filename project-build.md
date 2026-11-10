@@ -156,12 +156,30 @@
 
 **Goal:** hand entire app to Claude Design for full visual overhaul — not just verdict UI polish, every view.
 
-- [ ] Run all four views (form, loading, result, error) plus BattleDex through Claude Design for a complete visual pass — imported "Battleground Arcade" design project via the Claude Design MCP
-- [ ] Winner card component: name, image, reasoning text, entry animation when result lands (winner border pulse, WINNER/DEFEAT tags, grayscale loser)
-- [ ] Loading state redesigned to cover full wait for the fight call (VS spinner, rotating status text, animated verdict/art progress bar)
-- [ ] Consistent visual language applied app-wide (typography, color, spacing, motion) — no leftover placeholder styling anywhere
+- [x] Run all four views (form, loading, result, error) plus BattleDex through Claude Design for a complete visual pass — ~~imported "Battleground Arcade" design project via the Claude Design MCP~~ built from the "Arena of the Ancients" design in `design/` (see notes)
+- [x] Winner card component: name, image, reasoning text, entry animation when result lands (winner border pulse, ~~WINNER/DEFEAT~~ CHAMPION/DEFEATED tags, grayscale loser)
+- [x] Loading state redesigned to cover full wait for the fight call (~~VS spinner~~ three-ring spinner, rotating status text, ~~animated verdict/art progress bar~~ animated drum bars and portrait shimmer, per the mockup)
+- [x] Consistent visual language applied app-wide (typography, color, spacing, motion) — no leftover placeholder styling anywhere
 
 **Done when:** full app feels like one designed product, no more placeholder styling on any view.
+
+### Stage 6 status notes (2026-11-10)
+
+**Design source:** the "Arena of the Ancients" design brief and mockups committed in `design/` (`DESIGN.md`, `Main/Loading/Result/Dex.dc.html`, `sprites/`). The mockups were used as a visual reference only; their markup and JS were not copied. Fonts: Bungee, Silkscreen, Archivo (Google Fonts, free).
+
+**Built, one screen at a time, each checked in Chrome at full width and at 360px wide:**
+1. **Header and background:** mud-cloth zigzag page background, kente bands top and bottom of the page and on every panel, emblem + "BATTLEGROUND" wordmark + "ARENA OF THE ANCIENTS". The header's right side changes per view (`body[data-view]`, set by `showView()`): BattleDex button with count on form/result/error, "● FIGHT IN PROGRESS" while loading, New fight on the BattleDex. The BattleDex can't be opened mid-fight (`openDex()` returns while the loading view is shown).
+2. **Form:** "WHO WALKS OUT OF THE ARENA?" intro, two fighter cards (indigo West gate, laterite East gate) with 64px inputs and counters, VS badge with spinning sunburst, dark alert box for messages, big gold FIGHT! with swords. Added from the mockup: "Need a matchup?" chips (fill both names), and Fight greys out (`aria-disabled`, still clickable so a click explains what's missing) until both names are valid.
+3. **Loading:** two portrait frames with the fighters' names, "?" and shimmer; three counter-rotating rings; "THE GRIOTS DELIBERATE"; the rotating line (rises in on each change); five drum bars; the panel's kente band weaves.
+4. **Result:** "{WINNER} WINS!" slams in. Winner card 400px with gold border, pulsing glow, spinning sunburst, sparkles and CHAMPION crown; loser 290px, greyed, DEFEATED stamp. Art is pixel-sharp. Reasoning on a parchment scroll ("THE GRIOT'S TALE"). Placeholder art restyled as a dotted side-colour tile with a big outlined letter.
+5. **BattleDex:** "HALL OF CHAMPIONS" title row with Back to last fight / Clear all, zigzag divider, plaque cards with "No. 001" tags, art, bone name plate and a 44px icon Delete button. Delete stays at the **bottom centre** of each card and lines up across a row (user's request; the mockup had it bottom right). Empty-state card with "Start a fight". Clear all turns solid red once armed.
+6. **Error** (not mocked): same kente panel, cracked-shield emblem, "THE REFEREE STOPS THE BOUT", display title, big gold Try again.
+
+**Also fixed during Stage 6:** fighter cards on the result view were too big (now capped); a stray gap in "BATTLEDEX ( 0 )"; BattleDex Delete buttons misaligned when names wrapped; long names breaking mid-word in the loading portraits; Chrome ignoring `pixelated` because `crisp-edges` came after it.
+
+**Unchanged:** every id, `data-action`, `data-side`, `role` and `aria-*` the script depends on; the fetch and validation logic. `script.js` changes were only what the styling needed (current view on `body`, matchup chips and greyed Fight, loading portrait names and line animation, placeholder art, BattleDex card markup and number tags, no BattleDex mid-fight).
+
+**Motion:** every animation and transition stops under `prefers-reduced-motion: reduce` (one global rule at the end of `style.css`).
 
 ---
 

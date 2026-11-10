@@ -4,41 +4,105 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Battleground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Bungee&family=Silkscreen:wght@400;700&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
-    <h1>Battleground</h1>
-    <p class="tagline">Type two fighters. Find out who wins.</p>
+    <div class="site-header-inner">
+      <svg class="emblem" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
+        <circle cx="28" cy="28" r="25" fill="#D2552A" stroke="#1A0F0A" stroke-width="4"/>
+        <circle cx="28" cy="28" r="16" fill="#F2B233" stroke="#1A0F0A" stroke-width="3"/>
+        <path d="M28 17 L37 28 L28 39 L19 28 Z" fill="#1A0F0A"/>
+        <path d="M28 3 V10 M28 46 V53 M3 28 H10 M46 28 H53" stroke="#1A0F0A" stroke-width="4"/>
+      </svg>
+      <div class="brand">
+        <h1 class="wordmark title-arcade">Battleground</h1>
+        <p class="tagline">Arena of the Ancients</p>
+      </div>
+      <!-- Right side of the header changes per view (see body[data-view] in
+           style.css): BattleDex on form/result/error, a status line while a
+           fight loads, New fight on the BattleDex. -->
+      <div class="header-actions">
+        <button type="button" class="btn header-dex" data-action="open-dex">
+          <svg class="btn-icon" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
+            <rect x="2" y="3" width="18" height="16" fill="none" stroke="#1A0F0A" stroke-width="3"/>
+            <path d="M2 9 H20 M8 9 V19" stroke="#1A0F0A" stroke-width="3"/>
+          </svg>
+          BattleDex
+          <span class="dex-badge"><span class="dex-count">0</span><span class="visually-hidden"> saved</span></span>
+        </button>
+        <p class="fight-status" aria-hidden="true">● Fight in progress</p>
+        <button type="button" class="btn btn-primary header-new-fight" data-action="new-fight">New fight</button>
+      </div>
+    </div>
   </header>
 
   <main>
     <!-- View 1: input form (only view visible on load) -->
     <section id="view-form" class="view" aria-labelledby="form-title">
-      <h2 id="form-title" class="visually-hidden">Choose your fighters</h2>
-      <form id="fight-form" novalidate>
+      <div class="intro">
+        <p class="eyebrow" aria-hidden="true">◆ Enter the arena ◆</p>
+        <h2 id="form-title" class="intro-title">Who walks out <br>of the arena?</h2>
+        <p class="intro-text">Name two fighters. The griot weighs them, tells the tale, and paints both warriors for the ages.</p>
+      </div>
+      <form id="fight-form" class="panel" novalidate>
         <div class="fighters">
           <!-- No maxlength: a long paste would be cut off silently. script.js
-               checks the 50-character limit and explains it instead. -->
-          <label class="field">
+               checks the 50-character limit and explains it instead.
+               Gate and "name your warrior" labels are decoration, so each
+               input's accessible name stays "Fighter A" / "Fighter B". -->
+          <label class="field field-a">
             <span class="field-head">
-              <span>Fighter A</span>
-              <span class="char-count" id="count-a" aria-hidden="true">0/50</span>
+              <span class="field-title">Fighter A</span>
+              <span class="field-gate" aria-hidden="true">West gate</span>
             </span>
-            <input id="fighter-a" name="fighterA" type="text" autocomplete="off" placeholder="e.g. 10 cows">
+            <span class="field-body">
+              <input id="fighter-a" name="fighterA" type="text" autocomplete="off" placeholder="e.g. 10 cows">
+              <span class="field-foot">
+                <span aria-hidden="true">Name your warrior</span>
+                <span class="char-count" id="count-a" aria-hidden="true">0/50</span>
+              </span>
+            </span>
           </label>
-          <span class="vs" aria-hidden="true">VS</span>
-          <label class="field">
+          <span class="vs" aria-hidden="true">
+            <span class="vs-rays"></span>
+            <span class="vs-disc"><span class="vs-text">VS</span></span>
+          </span>
+          <label class="field field-b">
             <span class="field-head">
-              <span>Fighter B</span>
-              <span class="char-count" id="count-b" aria-hidden="true">0/50</span>
+              <span class="field-title">Fighter B</span>
+              <span class="field-gate" aria-hidden="true">East gate</span>
             </span>
-            <input id="fighter-b" name="fighterB" type="text" autocomplete="off" placeholder="e.g. 10 lions">
+            <span class="field-body">
+              <input id="fighter-b" name="fighterB" type="text" autocomplete="off" placeholder="e.g. 10 lions">
+              <span class="field-foot">
+                <span aria-hidden="true">Name your warrior</span>
+                <span class="char-count" id="count-b" aria-hidden="true">0/50</span>
+              </span>
+            </span>
           </label>
         </div>
         <p id="form-message" class="form-message" role="alert"></p>
-        <button type="submit" class="btn btn-primary">Fight!</button>
+        <button type="submit" class="btn btn-primary btn-fight" id="btn-fight">
+          <svg class="sword" viewBox="0 0 34 34" aria-hidden="true" focusable="false"><path d="M4 30 L26 8 M22 4 L30 12 M8 22 L12 26" stroke="#1A0F0A" stroke-width="4" stroke-linecap="square"/></svg>
+          Fight!
+          <svg class="sword" viewBox="0 0 34 34" aria-hidden="true" focusable="false"><path d="M30 30 L8 8 M12 4 L4 12 M26 22 L22 26" stroke="#1A0F0A" stroke-width="4" stroke-linecap="square"/></svg>
+        </button>
+        <div class="matchups" role="group" aria-labelledby="matchups-label">
+          <span id="matchups-label" class="matchups-label">Need a matchup?</span>
+          <button type="button" class="btn btn-chip" data-action="pick-matchup" data-a="10 cows" data-b="10 lions">10 cows vs 10 lions</button>
+          <button type="button" class="btn btn-chip" data-action="pick-matchup" data-a="Elephant" data-b="Crocodile">Elephant vs Crocodile</button>
+          <button type="button" class="btn btn-chip" data-action="pick-matchup" data-a="An army of ants" data-b="A bear">An army of ants vs a bear</button>
+        </div>
       </form>
+      <ul class="arena-rules">
+        <li>No draws. Ever.</li>
+        <li>5 fights a minute</li>
+        <li>Save champions to your BattleDex</li>
+      </ul>
       <p class="view-links">
         <button type="button" class="btn btn-link" data-action="open-dex">BattleDex (<span class="dex-count">0</span>)</button>
       </p>
@@ -46,32 +110,105 @@
 
     <!-- View 2: loading -->
     <section id="view-loading" class="view" hidden>
-      <div class="spinner" aria-hidden="true"></div>
-      <!-- Rotating fun lines are visual only; screen readers get one announcement. -->
-      <p id="loading-text" class="loading-text" aria-hidden="true">Fighters entering the arena…</p>
-      <p id="loading-status" class="visually-hidden" role="status"></p>
+      <!-- Everything here is visual except #loading-status, which screen
+           readers hear once per fight. Portrait names are set by script.js. -->
+      <div class="loading-stage">
+        <div class="portrait portrait-a" aria-hidden="true">
+          <div class="portrait-art"><span class="portrait-shimmer"></span><span class="qmark">?</span></div>
+          <div class="portrait-plate">
+            <span class="portrait-gate">Fighter A · West gate</span>
+            <span class="portrait-name" id="loading-name-a"></span>
+          </div>
+          <div class="portrait-status">Painting portrait…</div>
+        </div>
+
+        <div class="loading-centre">
+          <div class="rings" aria-hidden="true">
+            <span class="ring ring-outer"></span>
+            <span class="ring-core"></span>
+            <span class="ring ring-dashed"></span>
+            <span class="ring ring-inner"></span>
+            <svg class="ring-gem" viewBox="0 0 46 46" focusable="false">
+              <path d="M23 2 L44 23 L23 44 L2 23 Z" fill="#F2B233" stroke="#F3E3C3" stroke-width="3"/>
+              <path d="M23 13 L33 23 L23 33 L13 23 Z" fill="#1A0F0A"/>
+            </svg>
+          </div>
+          <p class="loading-title title-arcade" aria-hidden="true">The griots <br>deliberate</p>
+          <!-- Rotating fun lines are visual only; screen readers get one announcement. -->
+          <p id="loading-text" class="loading-text" aria-hidden="true">Fighters entering the arena…</p>
+          <p id="loading-status" class="visually-hidden" role="status"></p>
+          <div class="drums" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+
+        <div class="portrait portrait-b" aria-hidden="true">
+          <div class="portrait-art"><span class="portrait-shimmer"></span><span class="qmark">?</span></div>
+          <div class="portrait-plate">
+            <span class="portrait-gate">Fighter B · East gate</span>
+            <span class="portrait-name" id="loading-name-b"></span>
+          </div>
+          <div class="portrait-status">Painting portrait…</div>
+        </div>
+      </div>
+      <p class="loading-note" aria-hidden="true">The verdict and both portraits are being prepared at the same time. This usually takes a few seconds.</p>
     </section>
 
     <!-- View 3: result -->
     <section id="view-result" class="view" hidden aria-labelledby="result-title">
-      <h2 id="result-title">Winner: <span id="winner-name"></span></h2>
+      <div class="result-head">
+        <p class="eyebrow" aria-hidden="true">◆ The griot has spoken ◆</p>
+        <h2 id="result-title" class="result-title title-arcade"><span id="winner-name"></span> wins!</h2>
+      </div>
+      <!-- .card.is-winner (set by script.js) switches on the champion look:
+           sunburst, sparkles, crown banner. The loser gets the DEFEATED stamp.
+           All of that is decoration; the heading says who won. -->
       <div class="cards">
-        <figure class="card" id="card-a">
-          <img id="image-a" alt="">
+        <figure class="card card-a" id="card-a">
+          <span class="card-sunburst" aria-hidden="true"></span>
+          <svg class="sparkle sparkle-1" viewBox="0 0 34 34" aria-hidden="true" focusable="false"><path d="M17 0 L21 13 L34 17 L21 21 L17 34 L13 21 L0 17 L13 13 Z" fill="#FFE08A" stroke="#1A0F0A" stroke-width="2"/></svg>
+          <svg class="sparkle sparkle-2" viewBox="0 0 34 34" aria-hidden="true" focusable="false"><path d="M17 0 L21 13 L34 17 L21 21 L17 34 L13 21 L0 17 L13 13 Z" fill="#FFE08A" stroke="#1A0F0A" stroke-width="2"/></svg>
+          <svg class="sparkle sparkle-3" viewBox="0 0 34 34" aria-hidden="true" focusable="false"><path d="M17 0 L21 13 L34 17 L21 21 L17 34 L13 21 L0 17 L13 13 Z" fill="#FFE08A" stroke="#1A0F0A" stroke-width="2"/></svg>
+          <span class="crown" aria-hidden="true">
+            <svg viewBox="0 0 30 24" focusable="false"><path d="M2 21 L4 6 L10 12 L15 2 L20 12 L26 6 L28 21 Z" fill="#1A0F0A"/><rect x="2" y="19" width="26" height="4" fill="#1A0F0A"/></svg>
+            Champion
+          </span>
+          <div class="card-art">
+            <img id="image-a" alt="">
+            <span class="stamp" aria-hidden="true">Defeated</span>
+          </div>
+          <span class="card-side" aria-hidden="true">Fighter A · West gate</span>
           <figcaption id="label-a"></figcaption>
           <p id="note-a" class="image-note"></p>
-          <button type="button" class="btn btn-small" data-action="save-fighter" data-side="a">Save to BattleDex</button>
+          <button type="button" class="btn btn-small btn-save" data-action="save-fighter" data-side="a">Save to BattleDex</button>
           <p class="save-message" data-save-message="a" role="status"></p>
         </figure>
-        <figure class="card" id="card-b">
-          <img id="image-b" alt="">
+        <figure class="card card-b" id="card-b">
+          <span class="card-sunburst" aria-hidden="true"></span>
+          <svg class="sparkle sparkle-1" viewBox="0 0 34 34" aria-hidden="true" focusable="false"><path d="M17 0 L21 13 L34 17 L21 21 L17 34 L13 21 L0 17 L13 13 Z" fill="#FFE08A" stroke="#1A0F0A" stroke-width="2"/></svg>
+          <svg class="sparkle sparkle-2" viewBox="0 0 34 34" aria-hidden="true" focusable="false"><path d="M17 0 L21 13 L34 17 L21 21 L17 34 L13 21 L0 17 L13 13 Z" fill="#FFE08A" stroke="#1A0F0A" stroke-width="2"/></svg>
+          <svg class="sparkle sparkle-3" viewBox="0 0 34 34" aria-hidden="true" focusable="false"><path d="M17 0 L21 13 L34 17 L21 21 L17 34 L13 21 L0 17 L13 13 Z" fill="#FFE08A" stroke="#1A0F0A" stroke-width="2"/></svg>
+          <span class="crown" aria-hidden="true">
+            <svg viewBox="0 0 30 24" focusable="false"><path d="M2 21 L4 6 L10 12 L15 2 L20 12 L26 6 L28 21 Z" fill="#1A0F0A"/><rect x="2" y="19" width="26" height="4" fill="#1A0F0A"/></svg>
+            Champion
+          </span>
+          <div class="card-art">
+            <img id="image-b" alt="">
+            <span class="stamp" aria-hidden="true">Defeated</span>
+          </div>
+          <span class="card-side" aria-hidden="true">Fighter B · East gate</span>
           <figcaption id="label-b"></figcaption>
           <p id="note-b" class="image-note"></p>
-          <button type="button" class="btn btn-small" data-action="save-fighter" data-side="b">Save to BattleDex</button>
+          <button type="button" class="btn btn-small btn-save" data-action="save-fighter" data-side="b">Save to BattleDex</button>
           <p class="save-message" data-save-message="b" role="status"></p>
         </figure>
       </div>
-      <p id="reasoning" class="reasoning"></p>
+      <div class="tale">
+        <span class="tale-roll" aria-hidden="true"></span>
+        <div class="tale-body">
+          <h3 class="tale-title">The griot’s tale</h3>
+          <p id="reasoning" class="reasoning"></p>
+        </div>
+        <span class="tale-roll" aria-hidden="true"></span>
+      </div>
       <div class="actions">
         <button type="button" class="btn" data-action="new-fight">New fight</button>
         <button type="button" class="btn" data-action="open-dex">BattleDex (<span class="dex-count">0</span>)</button>
@@ -80,21 +217,45 @@
 
     <!-- View 4: error -->
     <section id="view-error" class="view" hidden role="alert">
+      <!-- Not in the mockups: same panel style, with a cracked-shield emblem. -->
+      <svg class="error-emblem" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+        <path d="M48 6 L84 20 V46 C84 68 68 84 48 90 C28 84 12 68 12 46 V20 Z" fill="#D2552A" stroke="#1A0F0A" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M48 18 L72 27 V46 C72 61 62 72 48 77 C34 72 24 61 24 46 V27 Z" fill="#F2B233" stroke="#1A0F0A" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M50 8 L42 34 L54 46 L40 66 L46 90" fill="none" stroke="#1A0F0A" stroke-width="5" stroke-linejoin="round"/>
+      </svg>
+      <p class="eyebrow" aria-hidden="true">◆ The referee stops the bout ◆</p>
       <h2 id="error-title">No decision!</h2>
       <p id="error-text">The fight fizzled out before anyone landed a punch. Ring the bell and try again!</p>
-      <button type="button" class="btn" data-action="new-fight">Try again</button>
+      <button type="button" class="btn btn-primary btn-retry" data-action="new-fight">Try again</button>
     </section>
 
     <!-- View 5: BattleDex (saved fighters, kept in localStorage) -->
     <section id="view-dex" class="view" hidden aria-labelledby="dex-title">
-      <h2 id="dex-title">BattleDex</h2>
-      <p id="dex-empty" class="dex-empty">No fighters saved yet. Win or lose, save a fighter from any fight result.</p>
-      <ul id="dex-grid" class="dex-grid"></ul>
+      <div class="dex-head">
+        <div class="dex-titles">
+          <p class="eyebrow" aria-hidden="true">◆ Hall of champions ◆</p>
+          <h2 id="dex-title" class="dex-title title-arcade">BattleDex</h2>
+          <p class="dex-countline">Champions in the hall: <span class="dex-count">0</span></p>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" data-action="last-fight" id="btn-last-fight" hidden>Back to last fight</button>
+          <button type="button" class="btn btn-primary" data-action="new-fight">New fight</button>
+          <button type="button" class="btn btn-danger" data-action="clear-dex" id="btn-clear-dex" hidden>Clear all</button>
+        </div>
+      </div>
+      <div class="zig-edge" aria-hidden="true"></div>
       <p id="dex-message" class="save-message" role="status"></p>
-      <div class="actions">
-        <button type="button" class="btn" data-action="last-fight" id="btn-last-fight" hidden>Back to last fight</button>
-        <button type="button" class="btn btn-primary" data-action="new-fight">New fight</button>
-        <button type="button" class="btn btn-danger" data-action="clear-dex" id="btn-clear-dex" hidden>Clear all</button>
+      <ul id="dex-grid" class="dex-grid"></ul>
+      <!-- Empty state. script.js only toggles its hidden attribute. -->
+      <div id="dex-empty" class="dex-empty">
+        <svg class="dex-empty-art" viewBox="0 0 150 120" aria-hidden="true" focusable="false">
+          <rect x="35" y="86" width="80" height="16" fill="#5A3218" stroke="#1A0F0A" stroke-width="4"/>
+          <rect x="22" y="100" width="106" height="16" fill="#7A4A22" stroke="#1A0F0A" stroke-width="4"/>
+          <path d="M75 10 L95 42 L75 74 L55 42 Z" fill="none" stroke="#F2B233" stroke-width="4" stroke-dasharray="8 6"/>
+        </svg>
+        <h3 class="dex-empty-title">The hall is empty</h3>
+        <p>No fighters saved yet. Win or lose, save a fighter from any fight result and they will stand here forever.</p>
+        <button type="button" class="btn btn-primary" data-action="new-fight">Start a fight</button>
       </div>
     </section>
   </main>

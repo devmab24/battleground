@@ -16,11 +16,13 @@ const formMessage = document.getElementById("form-message");
 
 const FIGHT_TIMEOUT_MS = 60_000;
 
-// Show exactly one view; hide all the others.
+// Show exactly one view; hide all the others. body[data-view] lets the
+// header show the right button for the current view (see style.css).
 function showView(name) {
   for (const [key, el] of Object.entries(views)) {
     el.hidden = key !== name;
   }
+  document.body.dataset.view = name;
 }
 
 // Same limit and counting as the server (lib/judge-prompt.mjs): whitespace
@@ -76,19 +78,42 @@ function onNameInput() {
     formMessage.textContent = "";
     showingLengthMessage = false;
   }
+  updateFightButton();
+}
+
+// Grey out Fight until both names are in and fit. It uses aria-disabled, not
+// disabled, so it stays clickable: a click on the greyed button still runs
+// validate() and shows why the fight can't start yet.
+const fightButton = document.getElementById("btn-fight");
+function updateFightButton() {
+  const a = inputA.value.trim();
+  const b = inputB.value.trim();
+  const ready = Boolean(a && b) && !lengthMessage(a, b);
+  fightButton.setAttribute("aria-disabled", String(!ready));
 }
 inputA.addEventListener("input", onNameInput);
 inputB.addEventListener("input", onNameInput);
 
 // Placeholder art: a coloured square with the fighter's first letter,
 // skipping a leading "a", "an" or "the" ("a ninja" shows N, not A).
-function placeholderImage(label, color) {
+// Arena style: a dotted tile in the fighter's side colour with a big bone
+// letter, ink outline and hard ink shadow. (An SVG used as an <img> can't load
+// the page's web fonts, so the letter uses a heavy system font.)
+function placeholderImage(label, color, dotColor) {
   const name = label.replace(/^(a|an|the)\s+/i, "") || label;
-  const letter = [...name][0].toUpperCase();
+  const letter = escapeXml([...name][0].toUpperCase());
+  const text = (dx, fill, stroke) =>
+    `<text x="${50 + dx}" y="${50 + dx}" dy=".36em" text-anchor="middle"
+      font-family="'Arial Black', Impact, 'Segoe UI Black', sans-serif" font-weight="900"
+      font-size="58" fill="${fill}" stroke="${stroke}" stroke-width="5"
+      stroke-linejoin="round" paint-order="stroke fill">${letter}</text>`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <defs><pattern id="d" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="5" cy="5" r="1.7" fill="${dotColor}"/></pattern></defs>
     <rect width="100" height="100" fill="${color}"/>
-    <text x="50" y="50" dy=".35em" text-anchor="middle" font-family="sans-serif"
-      font-size="48" font-weight="700" fill="#fff">${escapeXml(letter)}</text>
+    <rect width="100" height="100" fill="url(#d)"/>
+    ${text(4, "#1A0F0A", "#1A0F0A")}
+    ${text(0, "#F3E3C3", "#1A0F0A")}
   </svg>`;
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
@@ -163,8 +188,9 @@ async function fight(fighterA, fighterB) {
   return {
     winnerSide: data.winner === "A" ? "a" : "b",
     reasoning: data.reasoning,
-    imageA: imageA.src || placeholderImage(fighterA, "#3a6fd9"),
-    imageB: imageB.src || placeholderImage(fighterB, "#d93a3a"),
+    // Side colours from the design: adire indigo (A), laterite red (B).
+    imageA: imageA.src || placeholderImage(fighterA, "#6F8BFF", "#5873E0"),
+    imageB: imageB.src || placeholderImage(fighterB, "#E8673A", "#C9532A"),
     noteA: IMAGE_NOTES[imageA.status] ?? "",
     noteB: IMAGE_NOTES[imageB.status] ?? "",
   };
@@ -199,11 +225,18 @@ function startLoadingLines(fighterA, fighterB) {
   stopLoadingLines();
   document.getElementById("loading-status").textContent =
     `The fight is on: ${fighterA} versus ${fighterB}. Waiting for the judges.`;
+  // The two portrait frames show who's fighting while the art is painted.
+  document.getElementById("loading-name-a").textContent = fighterA;
+  document.getElementById("loading-name-b").textContent = fighterB;
   let queue = [];
   const next = () => {
     if (!queue.length) queue = [...LOADING_LINES].sort(() => Math.random() - 0.5);
     const line = queue.pop();
     loadingText.textContent = typeof line === "function" ? line(fighterA, fighterB) : line;
+    // Replay the rise-in animation for each new line.
+    loadingText.classList.remove("line-in");
+    void loadingText.offsetWidth;
+    loadingText.classList.add("line-in");
   };
   next();
   loadingTimer = setInterval(next, LOADING_LINE_MS);
@@ -342,27 +375,46 @@ function renderDex() {
   const entries = loadDex();
   dexGrid.replaceChildren(
     ...entries.map((entry, index) => {
+      // A plaque: art panel (dotted background cycling through 4 colours,
+      // "No. 001" tag), then a bone name plate with the delete button.
       const item = document.createElement("li");
-      item.className = "dex-card";
+      item.className = `dex-card dex-tone-${index % 4}`;
+
+      const art = document.createElement("div");
+      art.className = "dex-art";
+
+      const num = document.createElement("span");
+      num.className = "dex-num";
+      num.setAttribute("aria-hidden", "true");
+      num.textContent = `No. ${String(index + 1).padStart(3, "0")}`;
 
       const img = document.createElement("img");
       img.src = entry.image;
       img.alt = `Art of ${entry.label}`;
       img.loading = "lazy";
+      art.append(num, img);
+
+      const plate = document.createElement("div");
+      plate.className = "dex-plate";
 
       const name = document.createElement("p");
       name.className = "dex-name";
       name.textContent = entry.label;
 
+      // Icon button (trash icon in CSS); the label says what it deletes.
       const remove = document.createElement("button");
       remove.type = "button";
-      remove.className = "btn btn-small";
+      remove.className = "btn dex-delete";
       remove.dataset.action = "delete-fighter";
       remove.dataset.index = String(index);
-      remove.textContent = "Delete";
       remove.setAttribute("aria-label", `Delete ${entry.label} from BattleDex`);
+      const removeText = document.createElement("span");
+      removeText.className = "visually-hidden";
+      removeText.textContent = "Delete";
+      remove.append(removeText);
 
-      item.append(img, name, remove);
+      plate.append(name, remove);
+      item.append(art, plate);
       return item;
     }),
   );
@@ -373,6 +425,8 @@ function renderDex() {
 }
 
 function openDex() {
+  // Never mid-fight: the result would land on top of the BattleDex.
+  if (!views.loading.hidden) return;
   dexMessage.textContent = "";
   disarmClear();
   renderDex();
@@ -499,8 +553,17 @@ document.addEventListener("click", (event) => {
     case "clear-dex":
       clearDex();
       break;
+    case "pick-matchup":
+      // Fill both names from a suggestion chip, then hand focus to Fight.
+      inputA.value = button.dataset.a;
+      inputB.value = button.dataset.b;
+      formMessage.textContent = "";
+      onNameInput();
+      fightButton.focus();
+      break;
   }
 });
 
 updateDexCount();
+updateFightButton();
 showView("form");
