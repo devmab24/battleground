@@ -52,18 +52,57 @@
 
 **Goal:** one function, one call, real winner + reasoning + one image per side, end to end.
 
-- [ ] `api/fight.js` serverless function: takes `{ fighterA, fighterB }`
-- [ ] Rate limit check runs first, before calling either API — key by IP, 5 requests/minute per `project-brief.md` §5, return 429 with a clear message when exceeded
-- [ ] Calls Claude for the verdict (using the Stage 2 system prompt) and OpenAI image API for both fighters' art
-- [ ] Verdict output (`winner`, `reasoning`) enforced via a zod schema, not JSON-format instructions in the prompt
-- [ ] Store both API keys in env vars, never in client code
-- [ ] Group inputs (e.g. "10 cows") still produce exactly one image for that side — handled in the prompt sent to the image API, not by looping
-- [ ] Every image generated must follow one shared art style template, appended to each fighter's image prompt (not left to the model's default style):
+- [x] `api/fight.js` serverless function: takes `{ fighterA, fighterB }`
+- [x] Rate limit check runs first, before calling either API — key by IP, 5 requests/minute per `project-brief.md` §5, return 429 with a clear message when exceeded
+- [ ] Calls Claude for the verdict (using the Stage 2 system prompt) and ~~OpenAI~~ **Pollinations** image API for both fighters' art (images verified; Claude verdict not yet tested, see notes)
+- [ ] Verdict output (`winner`, `reasoning`) enforced via a zod schema, not JSON-format instructions in the prompt (written in `api/fight.js`, not yet run against the real API)
+- [x] Store both API keys in env vars, never in client code
+- [x] Group inputs (e.g. "10 cows") still produce exactly one image for that side — handled in the prompt sent to the image API, not by looping
+- [x] Every image generated must follow one shared art style template, appended to each fighter's image prompt (not left to the model's default style):
   > 16-bit pixel art illustration, retro video game sprite style, bold outlined pixels, vibrant limited color palette, dynamic action pose. Depicted as one cohesive image, centered, filling most of the frame, isolated on a plain solid color background with no scenery. No text, words, letters, numbers, logos, watermarks, UI elements, borders, or frames.
-- [ ] Wire Fight button to call `/api/fight` instead of the fake timeout
-- [ ] Handle errors distinctly in the UI: verdict failure, image failure, moderation-blocked (image request rejected by OpenAI's content moderation — distinct message from a generic image failure), rate-limit 429 — don't hang on loading forever
+- [x] Wire Fight button to call `/api/fight` instead of the fake timeout
+- [x] Handle errors distinctly in the UI: verdict failure, image failure, moderation-blocked (image request rejected by ~~OpenAI's~~ the image provider's content filter — distinct message from a generic image failure), rate-limit 429 — don't hang on loading forever (tested in Chrome 2026-11-10, see notes)
 
 **Done when:** typing two real fighters returns winner + reasoning + one image per side from a single call, both images following the shared art style template; hammering Fight 6x in a minute from one IP gets blocked on the 6th and resets after a minute.
+
+### Stage 3 status notes (2026-11-10)
+
+**Image provider: Pollinations, not OpenAI.** This plan originally named the OpenAI image API. To keep the $0 budget, images come from Pollinations (`gen.pollinations.ai/image/`, `lib/images.mjs`), which `project-brief.md` lists as a free-tier candidate. It needs a **secret** key (`sk_...`) from https://enter.pollinations.ai/keys in `POLLINATIONS_API_KEY`. Every image is paid from that account's free credits ("pollen"); if they run out, images fall back to placeholder art and the fight still works. Requests use `safe: "sexual"`, so sexual prompts are blocked but fight violence is allowed. Clarifai was considered as an alternative, but its site, API and docs were unreachable on 2026-11-10 (reportedly folded into Nebius in 2026). Cloudflare Workers AI (free daily allowance, FLUX models) is the recommended fallback if one is needed; not built.
+
+**Claude verdict: NOT TESTED.** `ANTHROPIC_API_KEY` is empty in `.env`, so every fight so far returned the mock verdict (`mock: true`). The real call in `api/fight.js` (Claude, zod schema, refusal handling) has never run. This also blocks the Stage 2 tests (prompt injection, prompt leaking, identical fighters in `lib/judge-test-cases.mjs`). To do: add a key, run real fights, run the Stage 2 cases.
+
+**Rate limit: PASSED locally (in-memory limiter).** Tested 2026-11-10 against `npm run dev`: fights 1–5 returned 200, fight 6 returned 429 with `Retry-After: 60` and "Slow down! Try again in 60 seconds.", an invalid request while blocked still returned 400 (invalid requests aren't counted), and a fight after ~61 s returned 200. Not tested: the Upstash Redis limiter used in production (`UPSTASH_REDIS_REST_URL`/`TOKEN` are empty locally). Without Upstash on Vercel, each serverless instance keeps its own count, so the limit isn't reliable there.
+
+**Group inputs / single fighters: FIXED.** Single fighters ("a samurai", "a grizzly bear") were being drawn as crowds, because every prompt mentioned groups. `buildImagePrompt()` in `lib/art-style.mjs` now uses `isGroupFighter()` to spot groups (a leading number like "10 cows", number words like "a dozen", group words like "army"/"swarm"/"pack", or "and"/"&" as in "Batman and Robin") and asks for "exactly one single character" otherwise. Verified with real images: samurai, bear and Godzilla each came out as one character; "10 cows" came out as one image of a herd (9 cows; image models don't count exactly). Known limit: a plural with no number ("cows") is treated as one fighter.
+
+**Art style: PASSED.** All generated images follow the 16-bit pixel-art template.
+
+**Leftover file:** `api/art-style.js` is an old CommonJS copy of the template, fully commented out so it can't break the ESM build (`vercel build` passed on 2026-11-10). Vercel still exposes it as `/api/art-style` with no handler; moving it out of `api/` would remove that route.
+
+**Still open before Stage 3 is done:**
+- [ ] **The real Claude call has never run against the live API** (no budget for an Anthropic key yet, 2026-11-10). Everything that can be checked without a key has been:
+  - The judge code now lives in `lib/judge.mjs` (`judgeFight()`, the zod `VerdictSchema`, `mockVerdict()`); `api/fight.js` imports it. Behavior unchanged.
+  - Checked offline on 2026-11-10 by faking Anthropic's server inside a Node process (no network, $0), running the real `api/fight.js`: a valid verdict → 200 with winner and reasoning; refusal, winner other than "A"/"B" (zod rejects it), cut-off answer (`max_tokens`), bad key (401) and out-of-credit (400) → 502 "No verdict"; rate limited (429) and overloaded (529) → 503 "judge is swamped" after the SDK's 2 retries. The request sent matches the current API: `claude-opus-5-5`, `effort: "low"`, `fallbacks: "default"` with the `server-side-fallback-2026-07-01` beta, JSON-schema output, fighters wrapped in `<fighter_a>`/`<fighter_b>`.
+  - `npm run check:judge` (`scripts/check-judge.mjs`) runs the 7 Stage 2 cases (8 calls) against the real API and auto-checks each verdict: winner is A/B, 2-4 sentences, no system-prompt leak. Without a key it stops before calling anything. Verified against the faked API, including that it flags a leak and a too-short answer.
+
+### Plugging in Claude (when there's budget)
+
+1. Get a key at https://platform.claude.com/settings/keys and add credit.
+2. Put it in `.env` as `ANTHROPIC_API_KEY=sk-ant-...` (see `.env.example`). No code changes needed.
+3. Run `npm run check:judge`. Expect 8 verdicts, all "auto-checks passed"; read each reasoning against its "Expect" line (no poem, no code, no leaked prompt, cow A vs cow B told apart). Then tick Stage 2's boxes.
+4. Restart `npm run dev` and play a fight: the response should no longer have `"mock": true`.
+5. For the live site, add the same key in Vercel → Project → Settings → Environment Variables, then redeploy.
+
+**Cost:** Opus 5.5 is $4 / $20 per million input / output tokens. Each fight sends ~1K tokens and gets a short answer at `effort: "low"`, so roughly a cent or two per fight (an estimate; check `usage` on the first real calls). The 5 fights/min/IP limit caps abuse per visitor, not in total, so set a monthly spend limit in the Claude Console before going live. A cheaper model (e.g. Claude Haiku 5.5 at $0.10 / $0.50) is a one-line change of `JUDGE_MODEL` in `lib/judge.mjs`, but Haiku has no server-side refusal fallback, so drop the `betas`/`fallbacks` lines with it, and re-run `npm run check:judge` to confirm quality holds.
+- [x] **The error screens in the browser have been clicked through (2026-11-10, Chrome, `npm run dev`).**
+  - Tested for real: empty fields ("Enter two fighters."), a normal fight, the rate limit (6th fight via the page shows "Too many fights / Slow down! Try again in N seconds."), a real verdict failure (deliberately invalid Anthropic key → 401 → "No verdict / The judge couldn't reach a verdict."), offline (server stopped → "Can't reach the arena"), and `?mock=error`.
+  - Tested with faked server responses in the page (can't easily be triggered for real): 503 judge busy, 500 crash page, timeout ("Time's up"), and the image notes ("Art blocked by the content filter." / "Art couldn't be generated."; "skipped" shows no note). The loading screen never got stuck.
+  - Bugs found and fixed in `public/script.js` / `public/index.html`:
+    1. Every error had the same "Something went wrong" heading. Each kind now has its own: "Too many fights", "No verdict", "Can't reach the arena", "Time's up".
+    2. A 200 response without a valid verdict (e.g. an HTML page, or JSON missing `winner`) made the page invent a winner (Fighter B, blank reasoning). It now shows "No verdict".
+    3. Placeholder art showed "A" for both "a ninja" and "a pirate". It now skips a leading "a"/"an"/"the" (shows N and P).
+    4. Expected failures no longer log console errors; only unexpected bugs are logged.
+  - Not tested: the real 60-second timeout (only faked), and a real "blocked" image from Pollinations' content filter (only faked).
 
 ---
 

@@ -1,4 +1,4 @@
-// Frontend: the verdict comes from /api/fight; images are placeholders for now.
+// Frontend: verdict and fighter art come from /api/fight (placeholder art as fallback).
 // Tip: add ?mock=error to the URL to see the error view without calling the API.
 
 const views = {
@@ -32,9 +32,11 @@ function validate(a, b) {
   return "";
 }
 
-// Placeholder art: a coloured square with the fighter's first letter.
+// Placeholder art: a coloured square with the fighter's first letter,
+// skipping a leading "a", "an" or "the" ("a ninja" shows N, not A).
 function placeholderImage(label, color) {
-  const letter = [...label][0].toUpperCase();
+  const name = label.replace(/^(a|an|the)\s+/i, "") || label;
+  const letter = [...name][0].toUpperCase();
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
     <rect width="100" height="100" fill="${color}"/>
     <text x="50" y="50" dy=".35em" text-anchor="middle" font-family="sans-serif"
@@ -47,11 +49,20 @@ function escapeXml(text) {
   return text.replace(/[<>&"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
-// Calls /api/fight for the verdict. Images are still placeholders until
-// image generation is added. Throws an Error with a user-facing message.
+// An error to show on the error view: a heading plus a user-facing message,
+// so each kind of failure (rate limit, offline, timeout, no verdict) reads differently.
+class FightError extends Error {
+  constructor(title, message) {
+    super(message);
+    this.title = title;
+  }
+}
+
+// Calls /api/fight for the verdict and both images.
+// Throws a FightError with a user-facing heading and message.
 async function fight(fighterA, fighterB) {
   if (new URLSearchParams(location.search).get("mock") === "error") {
-    throw new Error("Mock error: the judge left the arena.");
+    throw new FightError("Something went wrong", "Mock error: the judge left the arena.");
   }
 
   let response;
@@ -63,27 +74,45 @@ async function fight(fighterA, fighterB) {
       signal: AbortSignal.timeout(FIGHT_TIMEOUT_MS),
     });
   } catch (err) {
-    throw new Error(
-      err.name === "TimeoutError"
-        ? "The judge took too long. Try again."
-        : "Couldn't reach the arena. Check your connection and try again."
-    );
+    throw err.name === "TimeoutError"
+      ? new FightError("Time's up", "The judge took too long. Try again.")
+      : new FightError("Can't reach the arena", "Couldn't reach the arena. Check your connection and try again.");
   }
 
   const data = await response.json().catch(() => ({}));
+  if (response.status === 429) {
+    throw new FightError("Too many fights", data.message || "Slow down! Try again in a minute.");
+  }
   if (!response.ok) {
-    throw new Error(data.message || "The fight couldn't be judged. Please try again.");
+    throw new FightError("No verdict", data.message || "The fight couldn't be judged. Please try again.");
+  }
+  // A 200 without a real verdict (e.g. an HTML page from a proxy) must not
+  // invent a winner.
+  if ((data.winner !== "A" && data.winner !== "B") || typeof data.reasoning !== "string") {
+    throw new FightError("No verdict", "The fight couldn't be judged. Please try again.");
   }
 
   // Winner is identified by side ("A" or "B"), not by name,
   // so identical fighters (e.g. "cow" vs "cow") still work.
+  // A missing image falls back to placeholder art; it never fails the fight.
+  const imageA = data.images?.a ?? { status: "failed", src: null };
+  const imageB = data.images?.b ?? { status: "failed", src: null };
   return {
     winnerSide: data.winner === "A" ? "a" : "b",
     reasoning: data.reasoning,
-    imageA: placeholderImage(fighterA, "#3a6fd9"),
-    imageB: placeholderImage(fighterB, "#d93a3a"),
+    imageA: imageA.src || placeholderImage(fighterA, "#3a6fd9"),
+    imageB: imageB.src || placeholderImage(fighterB, "#d93a3a"),
+    noteA: IMAGE_NOTES[imageA.status] ?? "",
+    noteB: IMAGE_NOTES[imageB.status] ?? "",
   };
 }
+
+// Shown under the art when the real image couldn't be made.
+// "skipped" (no image key configured) shows no note.
+const IMAGE_NOTES = {
+  blocked: "Art blocked by the content filter.",
+  failed: "Art couldn't be generated.",
+};
 
 function renderResult(fighterA, fighterB, result) {
   const winner = result.winnerSide === "a" ? fighterA : fighterB;
@@ -100,6 +129,8 @@ function renderResult(fighterA, fighterB, result) {
   imageA.alt = `Art of ${fighterA}`;
   imageB.src = result.imageB;
   imageB.alt = `Art of ${fighterB}`;
+  document.getElementById("note-a").textContent = result.noteA;
+  document.getElementById("note-b").textContent = result.noteB;
 
   document.getElementById("card-a").classList.toggle("is-winner", result.winnerSide === "a");
   document.getElementById("card-b").classList.toggle("is-winner", result.winnerSide === "b");
@@ -124,7 +155,11 @@ form.addEventListener("submit", async (event) => {
     renderResult(fighterA, fighterB, result);
     showView("result");
   } catch (err) {
-    document.getElementById("error-text").textContent = err.message;
+    // A non-FightError means a bug in this file; log it, still show something useful.
+    if (!(err instanceof FightError)) console.error("[fight]", err);
+    document.getElementById("error-title").textContent = err.title || "Something went wrong";
+    document.getElementById("error-text").textContent =
+      err instanceof FightError ? err.message : "Something broke on this page. Please try again.";
     showView("error");
   }
 });

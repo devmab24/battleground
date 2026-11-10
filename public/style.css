@@ -185,6 +185,16 @@ main {
   overflow-wrap: anywhere;
 }
 
+.image-note {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.image-note:empty {
+  display: none;
+}
+
 .reasoning {
   text-align: left;
 }
