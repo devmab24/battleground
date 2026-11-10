@@ -31,6 +31,9 @@
         <p id="form-message" class="form-message" role="alert"></p>
         <button type="submit" class="btn btn-primary">Fight!</button>
       </form>
+      <p class="view-links">
+        <button type="button" class="btn btn-link" data-action="open-dex">BattleDex (<span class="dex-count">0</span>)</button>
+      </p>
     </section>
 
     <!-- View 2: loading -->
@@ -47,15 +50,22 @@
           <img id="image-a" alt="">
           <figcaption id="label-a"></figcaption>
           <p id="note-a" class="image-note"></p>
+          <button type="button" class="btn btn-small" data-action="save-fighter" data-side="a">Save to BattleDex</button>
+          <p class="save-message" data-save-message="a" role="status"></p>
         </figure>
         <figure class="card" id="card-b">
           <img id="image-b" alt="">
           <figcaption id="label-b"></figcaption>
           <p id="note-b" class="image-note"></p>
+          <button type="button" class="btn btn-small" data-action="save-fighter" data-side="b">Save to BattleDex</button>
+          <p class="save-message" data-save-message="b" role="status"></p>
         </figure>
       </div>
       <p id="reasoning" class="reasoning"></p>
-      <button type="button" class="btn" data-action="new-fight">New fight</button>
+      <div class="actions">
+        <button type="button" class="btn" data-action="new-fight">New fight</button>
+        <button type="button" class="btn" data-action="open-dex">BattleDex (<span class="dex-count">0</span>)</button>
+      </div>
     </section>
 
     <!-- View 4: error -->
@@ -63,6 +73,19 @@
       <h2 id="error-title">Something went wrong</h2>
       <p id="error-text">The fight couldn't be judged. Please try again.</p>
       <button type="button" class="btn" data-action="new-fight">Try again</button>
+    </section>
+
+    <!-- View 5: BattleDex (saved fighters, kept in localStorage) -->
+    <section id="view-dex" class="view" hidden aria-labelledby="dex-title">
+      <h2 id="dex-title">BattleDex</h2>
+      <p id="dex-empty" class="dex-empty">No fighters saved yet. Win or lose, save a fighter from any fight result.</p>
+      <ul id="dex-grid" class="dex-grid"></ul>
+      <p id="dex-message" class="save-message" role="status"></p>
+      <div class="actions">
+        <button type="button" class="btn" data-action="last-fight" id="btn-last-fight" hidden>Back to last fight</button>
+        <button type="button" class="btn btn-primary" data-action="new-fight">New fight</button>
+        <button type="button" class="btn btn-danger" data-action="clear-dex" id="btn-clear-dex" hidden>Clear all</button>
+      </div>
     </section>
   </main>
 

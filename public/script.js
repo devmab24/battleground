@@ -6,6 +6,7 @@ const views = {
   loading: document.getElementById("view-loading"),
   result: document.getElementById("view-result"),
   error: document.getElementById("view-error"),
+  dex: document.getElementById("view-dex"),
 };
 
 const form = document.getElementById("fight-form");
@@ -134,6 +135,160 @@ function renderResult(fighterA, fighterB, result) {
 
   document.getElementById("card-a").classList.toggle("is-winner", result.winnerSide === "a");
   document.getElementById("card-b").classList.toggle("is-winner", result.winnerSide === "b");
+
+  // A new fight: both fighters can be saved again.
+  for (const button of document.querySelectorAll("[data-action='save-fighter']")) {
+    button.disabled = false;
+    button.textContent = "Save to BattleDex";
+  }
+  for (const note of document.querySelectorAll("[data-save-message]")) note.textContent = "";
+  hasLastFight = true;
+}
+
+// ---------------------------------------------------------------------------
+// BattleDex: saved fighters, kept in localStorage as an array of
+// { label, image } (no fight, winner or reasoning data). `image` is a data URI.
+// Stage 5 will compress images before saving; until then a real image is
+// ~100-150 KB, so roughly 30-40 fit in the browser's ~5 MB quota.
+// ---------------------------------------------------------------------------
+
+const DEX_KEY = "battleground.battledex";
+const dexGrid = document.getElementById("dex-grid");
+const dexMessage = document.getElementById("dex-message");
+const clearButton = document.getElementById("btn-clear-dex");
+let hasLastFight = false;
+let clearArmedTimer = null;
+
+// Only data-URI images are kept: that's all this app ever saves, and it stops
+// a tampered entry from pointing an <img> at some other URL.
+function isValidEntry(entry) {
+  return (
+    entry &&
+    typeof entry.label === "string" &&
+    entry.label.trim() !== "" &&
+    typeof entry.image === "string" &&
+    entry.image.startsWith("data:image/")
+  );
+}
+
+// Returns the saved fighters. Bad or unreadable data counts as an empty list.
+function loadDex() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(DEX_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter(isValidEntry) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Returns "" on success, or a message saying why it couldn't save.
+function storeDex(entries) {
+  try {
+    localStorage.setItem(DEX_KEY, JSON.stringify(entries));
+    return "";
+  } catch (err) {
+    return err?.name === "QuotaExceededError"
+      ? "Your BattleDex is full. Delete some fighters to make room."
+      : "Couldn't save: this browser is blocking storage for this site.";
+  }
+}
+
+function updateDexCount(count = loadDex().length) {
+  for (const el of document.querySelectorAll(".dex-count")) el.textContent = count;
+}
+
+function renderDex() {
+  const entries = loadDex();
+  dexGrid.replaceChildren(
+    ...entries.map((entry, index) => {
+      const item = document.createElement("li");
+      item.className = "dex-card";
+
+      const img = document.createElement("img");
+      img.src = entry.image;
+      img.alt = `Art of ${entry.label}`;
+      img.loading = "lazy";
+
+      const name = document.createElement("p");
+      name.className = "dex-name";
+      name.textContent = entry.label;
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "btn btn-small";
+      remove.dataset.action = "delete-fighter";
+      remove.dataset.index = String(index);
+      remove.textContent = "Delete";
+      remove.setAttribute("aria-label", `Delete ${entry.label} from BattleDex`);
+
+      item.append(img, name, remove);
+      return item;
+    }),
+  );
+  document.getElementById("dex-empty").hidden = entries.length > 0;
+  clearButton.hidden = entries.length === 0;
+  document.getElementById("btn-last-fight").hidden = !hasLastFight;
+  updateDexCount(entries.length);
+}
+
+function openDex() {
+  dexMessage.textContent = "";
+  disarmClear();
+  renderDex();
+  showView("dex");
+}
+
+function saveFighter(side, button) {
+  const label = document.getElementById(`label-${side}`).textContent;
+  const image = document.getElementById(`image-${side}`).src;
+  const note = document.querySelector(`[data-save-message='${side}']`);
+  const entry = { label, image };
+  if (!isValidEntry(entry)) {
+    note.textContent = "This fighter can't be saved.";
+    return;
+  }
+
+  const entries = loadDex();
+  entries.push(entry);
+  const problem = storeDex(entries);
+  if (problem) {
+    note.textContent = problem;
+    return;
+  }
+  button.disabled = true;
+  button.textContent = "Saved ✓";
+  note.textContent = "";
+  updateDexCount(entries.length);
+}
+
+function deleteFighter(index) {
+  const entries = loadDex();
+  if (index < 0 || index >= entries.length) return;
+  const [removed] = entries.splice(index, 1);
+  const problem = storeDex(entries);
+  renderDex();
+  dexMessage.textContent = problem || `Deleted ${removed.label}.`;
+}
+
+// "Clear all" needs two clicks, so one stray click can't wipe the BattleDex.
+// (No confirm() dialog: it blocks the page.)
+function disarmClear() {
+  clearTimeout(clearArmedTimer);
+  delete clearButton.dataset.armed;
+  clearButton.textContent = "Clear all";
+}
+
+function clearDex() {
+  if (!clearButton.dataset.armed) {
+    clearButton.dataset.armed = "true";
+    clearButton.textContent = "Click again to clear all";
+    clearArmedTimer = setTimeout(disarmClear, 4000);
+    return;
+  }
+  disarmClear();
+  const problem = storeDex([]);
+  renderDex();
+  dexMessage.textContent = problem || "BattleDex cleared.";
 }
 
 form.addEventListener("submit", async (event) => {
@@ -164,12 +319,33 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-// "New fight" / "Try again" buttons return to the form.
+// All buttons with a data-action, on every view.
 document.addEventListener("click", (event) => {
-  if (event.target.closest("[data-action='new-fight']")) {
-    showView("form");
-    inputA.focus();
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+
+  switch (button.dataset.action) {
+    case "new-fight":
+      showView("form");
+      inputA.focus();
+      break;
+    case "open-dex":
+      openDex();
+      break;
+    case "last-fight":
+      if (hasLastFight) showView("result");
+      break;
+    case "save-fighter":
+      saveFighter(button.dataset.side, button);
+      break;
+    case "delete-fighter":
+      deleteFighter(Number(button.dataset.index));
+      break;
+    case "clear-dex":
+      clearDex();
+      break;
   }
 });
 
+updateDexCount();
 showView("form");

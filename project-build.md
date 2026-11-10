@@ -110,13 +110,25 @@
 
 **Goal:** save individual fighters, view saved fighters.
 
-- [ ] "Save" action per fighter: writes `{ label, image }` to a `localStorage` array — no fight/winner/reasoning data, just the fighter
-- [ ] BattleDex view: grid of saved fighters, each a mini trading-card style (image on top, name below) — not clickable, card just displays label + image
-- [ ] Delete/clear entries from BattleDex
-- [ ] "Back to last fight" button on BattleDex view — jumps back to most recent result view (winner/reasoning/images still in memory)
-- [ ] "New fight" button on BattleDex view — returns to input form view
+- [x] "Save" action per fighter: writes `{ label, image }` to a `localStorage` array — no fight/winner/reasoning data, just the fighter
+- [x] BattleDex view: grid of saved fighters, each a mini trading-card style (image on top, name below) — not clickable, card just displays label + image
+- [x] Delete/clear entries from BattleDex
+- [x] "Back to last fight" button on BattleDex view — jumps back to most recent result view (winner/reasoning/images still in memory)
+- [x] "New fight" button on BattleDex view — returns to input form view
 
 **Done when:** save a fighter, reload the page, it's still there in BattleDex; from BattleDex, can jump back to last fight result or start a new fight.
+
+### Stage 4 status notes (2026-11-10)
+
+**Built** in `public/index.html`, `public/script.js`, `public/style.css` (no server changes). Storage: `localStorage` key `battleground.battledex`, an array of `{ label, image }` where `image` is the data URI shown on the card (real art or the placeholder SVG).
+- Each result card has a "Save to BattleDex" button (shows "Saved ✓" once saved; resets on the next fight).
+- The BattleDex opens from a "BattleDex (N)" button on the form and on the result view. It is a fifth view toggled by `showView()` like the others.
+- Each saved card has a Delete button. "Clear all" needs two clicks within 4 s (no `confirm()` dialog, which blocks the page).
+- "Back to last fight" only shows when a fight has happened since the page loaded (the last fight lives in memory, per the plan).
+
+**Tested in Chrome (2026-11-10, `npm run dev`):** empty state; a real fight with Pollinations art, both fighters saved; **page reload → both still in the BattleDex (Done-when passed)**; stored entries have only `label` and `image`; "Back to last fight" restores winner, reasoning and images; Delete; Clear all (first click only arms it); a full `localStorage` shows "Your BattleDex is full. Delete some fighters to make room." and the retry works once space is free; corrupted JSON shows an empty BattleDex instead of crashing; tampered entries (an outside image URL, an empty name, a non-object) are skipped, and a name containing HTML is shown as plain text. No console errors.
+
+**Known limits (for Stage 5):** images are saved uncompressed. Two real images took ~134 KB, so roughly 70 real-art fighters fit in a typical ~5 MB quota. Saving the same fighter in two different fights stores two copies (allowed on purpose: each fight's art is different).
 
 ---
 

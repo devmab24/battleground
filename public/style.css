@@ -123,6 +123,39 @@ main {
   color: #fff;
 }
 
+.btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.btn-danger {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-link {
+  border: none;
+  background: none;
+  text-decoration: underline;
+  padding: 6px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.view-links {
+  margin: 12px 0 0;
+}
+
 .btn:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 2px;
@@ -197,6 +230,64 @@ main {
 
 .reasoning {
   text-align: left;
+}
+
+.card .btn-small {
+  margin-top: 8px;
+}
+
+.save-message {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.save-message:empty {
+  display: none;
+}
+
+/* BattleDex: a grid of mini trading cards (image on top, name below) */
+.dex-empty {
+  color: var(--muted);
+}
+
+.dex-grid {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.dex-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.dex-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.dex-name {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+#dex-message {
+  margin-bottom: 12px;
+  color: var(--muted);
 }
 
 .visually-hidden {
