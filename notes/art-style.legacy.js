@@ -1,6 +1,8 @@
 // DEPRECATED: kept for reference only. The live template is in lib/art-style.mjs.
 // Everything below is commented out because this project is ESM ("type": "module"),
-// so `module.exports` would throw, and Vercel turns every file in api/ into a route.
+// so `module.exports` would throw. Moved here from api/art-style.js on 2026-11-10:
+// Vercel turns every file in api/ into a route, and requesting /api/art-style
+// returned a 500 and crashed `vercel dev`. Nothing imports this file.
 //
 // // Shared art style template (Stage 3) — appended to every fighter's image
 // // prompt so both sides render as one consistent visual system.

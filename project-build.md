@@ -77,7 +77,7 @@
 
 **Art style: PASSED.** All generated images follow the 16-bit pixel-art template.
 
-**Leftover file:** `api/art-style.js` is an old CommonJS copy of the template, fully commented out so it can't break the ESM build (`vercel build` passed on 2026-11-10). Vercel still exposes it as `/api/art-style` with no handler; moving it out of `api/` would remove that route.
+**Leftover file:** the old CommonJS copy of the template, fully commented out so it can't break the ESM build, was moved from `api/art-style.js` to `notes/art-style.legacy.js` on 2026-11-10. In `api/` it was still a route: on the real Vercel runtime (`vercel dev`), `/api/art-style` returned a 500 ("Can't detect way to handle request") and crashed `vercel dev` on Windows. Nothing imports it.
 
 **Still open before Stage 3 is done:**
 - [ ] **The real Claude call has never run against the live API** (no budget for an Anthropic key yet, 2026-11-10). Everything that can be checked without a key has been:

@@ -36,7 +36,7 @@ Battleground: type two fighters, get an AI verdict on who'd win plus art for eac
 - The verdict shape `{ winner, reasoning }` should be enforced by a structured-output schema (zod in the plan), not by JSON instructions in the prompt.
 - Fighter text is data, never instructions. Validate names (trimmed, 1–50 chars) on both the client and the server. Over 50 is an error with a message (page: live counter and warning; server: 400 `name_too_long`), never a silent cut. `public/script.js` and `lib/judge-prompt.mjs` count length the same way; keep them in step.
 - Every image prompt gets the shared 16-bit pixel-art style template (`lib/art-style.mjs`). Only group names (`isGroupFighter()`: "10 cows", "an army of ants", "Batman and Robin") get the "show the whole group" wording; everything else asks for exactly one character, or the image model draws crowds.
-- `api/art-style.js` is a dead, fully commented-out CommonJS copy of the template. Don't uncomment it: `module.exports` breaks in this ESM project.
+- `notes/art-style.legacy.js` is a dead, fully commented-out CommonJS copy of the template, kept for reference. Don't uncomment it (`module.exports` breaks in this ESM project) and don't move it back into `api/`: every file there becomes a route, and this one returned a 500 and crashed `vercel dev`.
 - Rate limit: 5 requests/min per IP, checked before any AI call.
 
 ## Docs don't fully agree
