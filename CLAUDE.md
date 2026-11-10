@@ -45,5 +45,5 @@ Check with the user before building any of these:
 
 - **Providers:** images are settled: Pollinations, not the OpenAI images the build plan first named (decided 2026-11-10 for the $0 budget; see the Stage 3 status notes in `project-build.md`). Text is still open: the code uses Claude, while `project-brief.md` points to free tiers (Gemini/Groq/Cloudflare Workers AI). The real Claude verdict hasn't been tested yet, because `ANTHROPIC_API_KEY` is empty and every fight so far used the mock verdict.
 - **Who decides the winner:** the brief has a deterministic JS battle formula pick the winner, with the AI only writing the reasoning. The build plan and `judge-prompt.mjs` have the AI pick the winner.
-- **BattleDex storage:** the brief uses IndexedDB with image Blobs. The build plan uses `localStorage` with compressed data URIs.
-- **Progress:** the build plan marks Stages 4–6 (BattleDex, image compression, redesign) done, but `public/` only has the Stage 1 shell and no BattleDex code. Ask before assuming that work exists somewhere.
+- **BattleDex storage:** settled 2026-11-10: follow the build plan, `localStorage` with compressed data URIs (not the brief's IndexedDB with Blobs).
+- **Progress:** Stages 4–6 were wrongly marked done in the build plan; they were unticked on 2026-11-10 and get ticked only when actually built. Stage 3 is done except the real Claude verdict, which waits on an Anthropic key.

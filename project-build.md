@@ -55,7 +55,7 @@
 - [x] `api/fight.js` serverless function: takes `{ fighterA, fighterB }`
 - [x] Rate limit check runs first, before calling either API — key by IP, 5 requests/minute per `project-brief.md` §5, return 429 with a clear message when exceeded
 - [ ] Calls Claude for the verdict (using the Stage 2 system prompt) and ~~OpenAI~~ **Pollinations** image API for both fighters' art (images verified; Claude verdict not yet tested, see notes)
-- [ ] Verdict output (`winner`, `reasoning`) enforced via a zod schema, not JSON-format instructions in the prompt (written in `api/fight.js`, not yet run against the real API)
+- [ ] Verdict output (`winner`, `reasoning`) enforced via a zod schema, not JSON-format instructions in the prompt (written in `lib/judge.mjs`, not yet run against the real API)
 - [x] Store both API keys in env vars, never in client code
 - [x] Group inputs (e.g. "10 cows") still produce exactly one image for that side — handled in the prompt sent to the image API, not by looping
 - [x] Every image generated must follow one shared art style template, appended to each fighter's image prompt (not left to the model's default style):
@@ -110,11 +110,11 @@
 
 **Goal:** save individual fighters, view saved fighters.
 
-- [x] "Save" action per fighter: writes `{ label, image }` to a `localStorage` array — no fight/winner/reasoning data, just the fighter
-- [x] BattleDex view: grid of saved fighters, each a mini trading-card style (image on top, name below) — not clickable, card just displays label + image
-- [x] Delete/clear entries from BattleDex
-- [x] "Back to last fight" button on BattleDex view — jumps back to most recent result view (winner/reasoning/images still in memory)
-- [x] "New fight" button on BattleDex view — returns to input form view
+- [ ] "Save" action per fighter: writes `{ label, image }` to a `localStorage` array — no fight/winner/reasoning data, just the fighter
+- [ ] BattleDex view: grid of saved fighters, each a mini trading-card style (image on top, name below) — not clickable, card just displays label + image
+- [ ] Delete/clear entries from BattleDex
+- [ ] "Back to last fight" button on BattleDex view — jumps back to most recent result view (winner/reasoning/images still in memory)
+- [ ] "New fight" button on BattleDex view — returns to input form view
 
 **Done when:** save a fighter, reload the page, it's still there in BattleDex; from BattleDex, can jump back to last fight result or start a new fight.
 
@@ -124,9 +124,9 @@
 
 **Goal:** stay under `localStorage` quota (per brief §5).
 
-- [x] Before saving a fighter to BattleDex, draw its image to an off-screen `<canvas>`, resize down, re-export as JPEG/WebP at reduced quality
-- [x] Save the compressed data URI, not the original
-- [x] Test with several saved fighters that quota isn't hit quickly
+- [ ] Before saving a fighter to BattleDex, draw its image to an off-screen `<canvas>`, resize down, re-export as JPEG/WebP at reduced quality
+- [ ] Save the compressed data URI, not the original
+- [ ] Test with several saved fighters that quota isn't hit quickly
 
 **Done when:** ~10+ saved fighters don't blow `localStorage` quota.
 
@@ -136,10 +136,10 @@
 
 **Goal:** hand entire app to Claude Design for full visual overhaul — not just verdict UI polish, every view.
 
-- [x] Run all four views (form, loading, result, error) plus BattleDex through Claude Design for a complete visual pass — imported "Battleground Arcade" design project via the Claude Design MCP
-- [x] Winner card component: name, image, reasoning text, entry animation when result lands (winner border pulse, WINNER/DEFEAT tags, grayscale loser)
-- [x] Loading state redesigned to cover full wait for the fight call (VS spinner, rotating status text, animated verdict/art progress bar)
-- [x] Consistent visual language applied app-wide (typography, color, spacing, motion) — no leftover placeholder styling anywhere
+- [ ] Run all four views (form, loading, result, error) plus BattleDex through Claude Design for a complete visual pass — imported "Battleground Arcade" design project via the Claude Design MCP
+- [ ] Winner card component: name, image, reasoning text, entry animation when result lands (winner border pulse, WINNER/DEFEAT tags, grayscale loser)
+- [ ] Loading state redesigned to cover full wait for the fight call (VS spinner, rotating status text, animated verdict/art progress bar)
+- [ ] Consistent visual language applied app-wide (typography, color, spacing, motion) — no leftover placeholder styling anywhere
 
 **Done when:** full app feels like one designed product, no more placeholder styling on any view.
 
